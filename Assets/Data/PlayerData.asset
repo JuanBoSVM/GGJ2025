@@ -15,7 +15,7 @@ MonoBehaviour:
   _oxygen: 0
   _maxSpeed: 10
   _accelerationStep: 5
-  _agility: 0.5
+  _directionalControl: 0.2
   _stunDuration: 0
   _bubbleSpeed: 0
   _bubbleRange: 0

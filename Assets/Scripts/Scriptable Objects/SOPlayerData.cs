@@ -26,7 +26,7 @@ public class SOPlayerData : ScriptableObject
         "0 = The player cannot turn\n" +
         "1 = The player instantly turns around")]
     [Range(0.0f, 1.0f)]
-    public float _agility;
+    public float _directionalControl;
 
     [Space(10)]
     [Header("Ranged Combat Data")]

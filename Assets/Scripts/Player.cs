@@ -57,7 +57,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private float Agility
+    private float DirectionalControl
     {
         get
         {
@@ -68,7 +68,7 @@ public class Player : MonoBehaviour
                 return 0.0f;
             }
             // Return the value
-            return _playerData._agility;
+            return _playerData._directionalControl;
         }
     }
 
@@ -109,7 +109,7 @@ public class Player : MonoBehaviour
 
     void LerpDirection()
     {
-        m_MoveDirection = Vector3.Lerp(m_MoveDirection, m_TargetDirection, Agility);
+        m_MoveDirection = Vector3.Lerp(m_MoveDirection, m_TargetDirection, DirectionalControl);
     }
 
     void MoveUpdate()
