@@ -5,7 +5,9 @@ public class ShakeCameraManager : MonoBehaviour
 {
     private static ShakeCameraManager _instance;
 
-    [SerializeField] private float _globalShakeForce = 1.0f;
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    private float _globalShakeForce = 1.0f;
 
     public static ShakeCameraManager Instance
     {
@@ -35,6 +37,8 @@ public class ShakeCameraManager : MonoBehaviour
         {
             Destroy(this);
         }
+
+        DontDestroyOnLoad(this);
     }
 
     public void ShakeCamera(CinemachineImpulseSource _impulseSource)
