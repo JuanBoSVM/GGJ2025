@@ -5,7 +5,7 @@ public class SOPlayerData : ScriptableObject
 {
     [Header("General Data")]
     [Space(15)]
-    [Range(0, 10)]
+    [Range(0u, 10u)]
     public uint _oxygen;
 
     [Space(10)]

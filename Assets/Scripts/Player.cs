@@ -383,6 +383,12 @@ public class Player : MonoBehaviour
         Oxygen -= damage;
     }
 
+    public void Heal(uint amount)
+    {
+        // Increase the player's oxygen
+        Oxygen += amount;
+    }
+
     private void Start()
     {
         if (m_ImpulseSource is null)

@@ -6,6 +6,10 @@ public class SOBubbleData : ScriptableObject
     [Header("General Data")]
     [Space(15)]
 
+    [Tooltip("The amount of oxygen the bubble restores if its a health bubble")]
+    [Range(0u, 10u)]
+    public uint _oxygenRestored;
+
     [Tooltip("The amount of time in seconds the bubble will stun for")]
     public float _stunDuration;
 
