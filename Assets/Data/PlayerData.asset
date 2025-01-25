@@ -16,9 +16,11 @@ MonoBehaviour:
   _maxSpeed: 10
   _accelerationStep: 5
   _directionalControl: 0.2
-  _stunDuration: 0
-  _bubbleSpeed: 0
-  _bubbleRange: 0
+  _bubbleCooldown: 1
+  _bubblePrefab: {fileID: 3628480552008647998, guid: a6c60f7b16414714db3c9d107f2c1d53, type: 3}
   _knockbackForce: 0
   _meleeRange: 0
   _meleeDamage: 0
+  _invulnerabilityDuration: 0
+  _hitboxDuration: 0
+  _hitboxCooldown: 0

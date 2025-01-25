@@ -32,14 +32,17 @@ public class SOPlayerData : ScriptableObject
     [Header("Ranged Combat Data")]
     [Space(15)]
 
-    [Tooltip("The amount of time in seconds the bubble will stun for")]
-    public float _stunDuration;
+    [Tooltip("How many charge phases will the projectile have")]
+    public uint _chargePhases;
 
-    [Tooltip("The speed of the bubble in units per second")]
-    public float _bubbleSpeed;
+    [Tooltip("The time in seconds the player has to charge the shot phase")]
+    public float _phaseChargeTime;
 
-    [Tooltip("The range of the bubble in units")]
-    public float _bubbleRange;
+    [Tooltip("Cooldown between shots in seconds")]
+    public float _bubbleCooldown;
+
+    [Tooltip("Prefab of the bubble object")]
+    public GameObject _bubblePrefab;
 
 
     [Space(10)]
@@ -55,4 +58,13 @@ public class SOPlayerData : ScriptableObject
     [Tooltip("The amount of damage the melee attack does")]
     [Range(0, 10)]
     public uint _meleeDamage;
+
+    [Tooltip("The amount of time in seconds the player is invulnerable after being hit")]
+    public float _invulnerabilityDuration;
+
+    [Tooltip("The active time of the hitbox in seconds")]
+    public float _hitboxDuration;
+
+    [Tooltip("The cooldown time of the hitbox in seconds")]
+    public float _hitboxCooldown;
 }
