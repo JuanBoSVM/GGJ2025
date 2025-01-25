@@ -32,6 +32,12 @@ public class SOPlayerData : ScriptableObject
     [Header("Ranged Combat Data")]
     [Space(15)]
 
+    [Tooltip("How many charge phases will the projectile have")]
+    public uint _chargePhases;
+
+    [Tooltip("The time in seconds the player has to charge the shot phase")]
+    public float _phaseChargeTime;
+
     [Tooltip("Cooldown between shots in seconds")]
     public float _bubbleCooldown;
 

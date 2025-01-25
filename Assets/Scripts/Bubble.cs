@@ -54,7 +54,6 @@ public class Bubble : MonoBehaviour
 
                 // Stun the player
                 player.Stun(m_BubbleData._stunDuration);
-
             }
         }
 
