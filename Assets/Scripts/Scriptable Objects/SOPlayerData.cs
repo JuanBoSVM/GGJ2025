@@ -28,6 +28,15 @@ public class SOPlayerData : ScriptableObject
     [Range(0.0f, 1.0f)]
     public float _directionalControl;
 
+    [Tooltip("The speed multiplier during the dash")]
+    public float _dashSpeed;
+
+    [Tooltip("The duration of the dash in seconds")]
+    public float _dashDuration;
+
+    [Tooltip("The cooldown of the dash in seconds")]
+    public float _dashCooldown;
+
     [Space(10)]
     [Header("Ranged Combat Data")]
     [Space(15)]

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,6 +6,9 @@ public class GameManager : MonoBehaviour
 {
     // Instance of the GameManager
     private static GameManager _instance;
+
+    // List of the player game objects
+    private List<GameObject> m_Players = new List<GameObject>();
 
     // Accessor for the GameManager instance
     public static GameManager Instance
@@ -33,7 +37,8 @@ public class GameManager : MonoBehaviour
 
     void OnPlayerJoined(PlayerInput playerInput)
     {
-
+        // Add the player to the list of players
+        m_Players.Add(playerInput.gameObject);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created

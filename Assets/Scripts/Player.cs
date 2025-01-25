@@ -29,6 +29,10 @@ public class Player : MonoBehaviour
     private float m_Acceleration = 0.0f;
     private Vector3 m_MoveDirection = Vector3.zero;
     private Vector3 m_TargetDirection = Vector3.zero;
+    private Vector3 m_BufferedDirection = Vector3.zero;
+    private float m_SpeedMultiplier = 1.0f;
+    private float m_DashTimer = 0.0f;
+    private float m_DashCooldown = 0.0f;
 
     /* Combat Members */
 
@@ -37,6 +41,7 @@ public class Player : MonoBehaviour
     private float m_HitboxCooldown = 0.0f;
     private float m_BubbleCooldown = 0.0f;
     private float m_StunnedTimer = 0.0f;
+    private float m_InvulnerabilityTimer = 0.0f;
 
     /* Accessors */
 
@@ -68,7 +73,7 @@ public class Player : MonoBehaviour
             }
 
             // Return the value
-            return m_PlayerData._maxSpeed * m_Acceleration;
+            return m_PlayerData._maxSpeed * m_Acceleration * m_SpeedMultiplier;
         }
     }
 
@@ -207,10 +212,81 @@ public class Player : MonoBehaviour
         }
     }
 
-    /* Input Methods */
+    private float InvulnerabilityTime
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._invulnerabilityDuration;
+        }
+    }
+
+    private float DashDuration
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._dashDuration;
+        }
+    }
+
+    private float DashSpeed
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._dashSpeed;
+        }
+    }
+
+    private float DashCooldown
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._dashCooldown;
+        }
+    }
+
+    /* Events */
 
     private void OnMove(InputValue value)
     {
+        // Buffer inputs during the dash
+        if (m_DashTimer > 0.0f)
+        {
+            m_BufferedDirection = value.Get<Vector2>().normalized;
+            return;
+        }
+
         // Get the input value
         Vector2 input = value.Get<Vector2>().normalized;
 
@@ -308,6 +384,38 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void OnDash(InputValue value)
+    {
+        // Check if the input was a press or a release
+        if (value.isPressed)
+        {
+            // Check if the dash is on cooldown
+            if (m_DashCooldown > 0.0f) { return; }
+
+            // Set a target direction for the dash if there isn't one
+            if (m_TargetDirection == Vector3.zero) { m_TargetDirection = transform.forward; }
+
+            // Set the dash timer
+            m_DashTimer = DashDuration;
+
+            // Set the speed multiplier
+            m_SpeedMultiplier = DashSpeed;
+        }
+
+        else
+        {
+            // Check if the dash was interrupted
+            if (m_DashTimer > 0.0f)
+            {
+                // Reduce the dash timer to zero
+                m_DashTimer = 0.0f;
+
+                // Reset the speed multiplier
+                m_SpeedMultiplier = 1.0f;
+            }
+        }
+    }
+
     /* Movement Methods */
 
     private void Accelerate()
@@ -341,6 +449,42 @@ public class Player : MonoBehaviour
         // If there's no current movement, but there's a target direction,
         // set the move direction to the target direction
         if (m_MoveDirection == Vector3.zero) { m_MoveDirection = m_TargetDirection; }
+
+        // Check if the dash is active
+        if (m_DashTimer > 0.0f)
+        {
+            // Subtract the time since the last frame from the dash timer
+            m_DashTimer -= Time.deltaTime;
+
+            // Clamp the dash timer to the range [0, DashDuration]
+            m_DashTimer = Mathf.Clamp(m_DashTimer, 0.0f, DashDuration);
+
+            // Check if the dash timer is zero
+            if (m_DashTimer == 0.0f)
+            {
+                // Load the buffered direction if there's one
+                if (m_BufferedDirection != Vector3.zero)
+                {
+                    m_TargetDirection = m_BufferedDirection;
+
+                    // Reset the buffered direction
+                    m_BufferedDirection = Vector3.zero;
+                }
+
+                // Reset the speed multiplier
+                m_SpeedMultiplier = 1.0f;
+            }
+        }
+
+        // Check if the dash is on cooldown
+        if (m_DashCooldown > 0.0f)
+        {
+            // Subtract the time since the last frame from the dash cooldown
+            m_DashCooldown -= Time.deltaTime;
+
+            // Clamp the dash cooldown to the range [0, DashCooldown]
+            m_DashCooldown = Mathf.Clamp(m_DashCooldown, 0.0f, DashCooldown);
+        }
 
         // Compare the move direction with the target direction
         bool sameDirection = m_MoveDirection == m_TargetDirection;
@@ -418,11 +562,17 @@ public class Player : MonoBehaviour
 
     public void KnockBack(Vector3 direction, uint damage = 0u)
     {
+        // Check if the player is invulnerable
+        if (m_InvulnerabilityTimer > 0.0f) { return; }
+
         // Move the player in the knockback direction
         transform.position += direction;
 
         // Decrease the player's oxygen
         m_DamageTaken += damage;
+
+        // Become invulnerable for the determined time
+        m_InvulnerabilityTimer = InvulnerabilityTime;
     }
 
     public void Heal(uint amount)
