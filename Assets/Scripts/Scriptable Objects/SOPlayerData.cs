@@ -32,14 +32,8 @@ public class SOPlayerData : ScriptableObject
     [Header("Ranged Combat Data")]
     [Space(15)]
 
-    [Tooltip("The amount of time in seconds the bubble will stun for")]
-    public float _stunDuration;
-
-    [Tooltip("The speed of the bubble in units per second")]
-    public float _bubbleSpeed;
-
-    [Tooltip("The range of the bubble in units")]
-    public float _bubbleRange;
+    [Tooltip("Cooldown between shots in seconds")]
+    public float _bubbleCooldown;
 
     [Tooltip("Prefab of the bubble object")]
     public GameObject _bubblePrefab;

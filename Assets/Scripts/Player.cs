@@ -28,7 +28,9 @@ public class Player : MonoBehaviour
     /* Combat Members */
 
     private float m_HitboxActiveTime = 0.0f;
-    private float m_HitboxRemainingCooldown = 0.0f;
+    private float m_HitboxCooldown = 0.0f;
+    private float m_BubbleCooldown = 0.0f;
+    private float m_StunnedTimer = 0.0f;
 
     /* Accessors */
 
@@ -137,7 +139,7 @@ public class Player : MonoBehaviour
 
     /* Input Methods */
 
-    void OnMove(InputValue value)
+    private void OnMove(InputValue value)
     {
         // Get the input value
         Vector2 input = value.Get<Vector2>().normalized;
@@ -146,13 +148,25 @@ public class Player : MonoBehaviour
         m_TargetDirection = new Vector3(input.x, 0.0f, input.y);
     }
 
-    void OnFire()
+    private void OnFire()
     {
+        if (m_BubbleCooldown > 0.0f) { return; }
+
         // Spawn the bubble prefab
         Instantiate(BubblePrefab, transform.position, Quaternion.identity, transform);
+
+        // Validate the reference to the player data
+        if (m_PlayerData == null)
+        {
+            Debug.LogError("PlayerData reference not set in Player script");
+            return;
+        }
+
+        // Set the remaining cooldown
+        m_BubbleCooldown = m_PlayerData._bubbleCooldown;
     }
 
-    void OnAttack()
+    private void OnAttack()
     {
         // Enable the hit box
         m_HitBox.enabled = true;
@@ -160,7 +174,7 @@ public class Player : MonoBehaviour
 
     /* Movement Methods */
 
-    void Accelerate()
+    private void Accelerate()
     {
         // Add the acceleration step to the current acceleration
         m_Acceleration += m_PlayerData._accelerationStep * Time.deltaTime;
@@ -169,7 +183,7 @@ public class Player : MonoBehaviour
         m_Acceleration = Mathf.Clamp(m_Acceleration, 0.0f, 1.0f);
     }
 
-    void Decelerate()
+    private void Decelerate()
     {
         // Subtract the acceleration step from the current acceleration
         m_Acceleration -= m_PlayerData._accelerationStep * Time.deltaTime;
@@ -178,12 +192,12 @@ public class Player : MonoBehaviour
         m_Acceleration = Mathf.Clamp(m_Acceleration, 0.0f, 1.0f);
     }
 
-    void LerpDirection()
+    private void LerpDirection()
     {
         m_MoveDirection = Vector3.Lerp(m_MoveDirection, m_TargetDirection, DirectionalControl);
     }
 
-    void MoveUpdate()
+    private void MoveUpdate()
     {
         // If there's no current movement, but there's a target direction,
         // set the move direction to the target direction
@@ -215,7 +229,7 @@ public class Player : MonoBehaviour
         if (DeltaMove != Vector3.zero) { Move(); }
     }
 
-    void AtackUpdate()
+    private void AtackUpdate()
     {
         // Check if the hitbox is active
         if (m_HitBox.enabled)
@@ -233,26 +247,49 @@ public class Player : MonoBehaviour
                 m_HitboxActiveTime = 0.0f;
 
                 // Set the remaining cooldown
-                m_HitboxRemainingCooldown = HitCooldown;
+                m_HitboxCooldown = HitCooldown;
             }
         }
 
         // Check if the hitbox is on cooldown
-        if (m_HitboxRemainingCooldown > 0.0f)
+        if (m_HitboxCooldown > 0.0f)
         {
             // Subtract the time since the last frame from the remaining cooldown
-            m_HitboxRemainingCooldown -= Time.deltaTime;
+            m_HitboxCooldown -= Time.deltaTime;
+        }
+
+        // Check if the bubble is on cooldown
+        if (m_BubbleCooldown > 0.0f)
+        {
+            // Subtract the time since the last frame from the remaining cooldown
+            m_BubbleCooldown -= Time.deltaTime;
         }
     }
 
-    void Move()
+    private void Move()
     {
         // Move the player
         transform.Translate(DeltaMove);
     }
 
-    void FixedUpdate()
+    public void Stun(float seconds)
     {
+        m_StunnedTimer = seconds;
+    }
+
+    private void FixedUpdate()
+    {
+        // Check if the player is stunned
+        if (m_StunnedTimer > 0.0f)
+        {
+            // Subtract the time since the last frame from the stunned timer
+            m_StunnedTimer -= Time.deltaTime;
+
+            // If the stunned timer is less than or equal to zero, reset the timer
+            if (m_StunnedTimer <= 0.0f) { m_StunnedTimer = 0.0f; }
+            else { return; }
+        }
+
         // Update the movement
         MoveUpdate();
 
