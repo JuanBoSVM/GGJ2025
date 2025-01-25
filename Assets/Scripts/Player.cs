@@ -1,23 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Unity.Cinemachine;
 
 public class Player : MonoBehaviour
 {
-    /* References */
+    [Header("References")]
+    [Space(15)]
 
     [SerializeField]
-    private SOPlayerData m_PlayerData;
-
-    [SerializeField]
-    private PlayerInput m_PlayerInput;
-
-    [SerializeField]
-    [Tooltip("The collider component of the player")]
-    private CapsuleCollider m_Collider;
-
-    [SerializeField]
-    [Tooltip("The collider component of the melee attack")]
-    private BoxCollider m_HitBox;
+    private SOPlayerData _playerData;
 
     /* Movement Members */
 
@@ -25,6 +16,8 @@ public class Player : MonoBehaviour
     private Vector3 m_MoveDirection = Vector3.zero;
     private Vector3 m_TargetDirection = Vector3.zero;
 
+<<<<<<< Updated upstream
+=======
     /* Combat Members */
 
     private float m_HitboxActiveTime = 0.0f;
@@ -32,21 +25,30 @@ public class Player : MonoBehaviour
     private float m_BubbleCooldown = 0.0f;
     private float m_StunnedTimer = 0.0f;
 
+    /* Cinemachine impulse source */
+    private CinemachineImpulseSource _impulseSource;
+
+>>>>>>> Stashed changes
     /* Accessors */
+
+    private void Start()
+    {
+        _impulseSource = GetComponent<CinemachineImpulseSource>();
+    }
 
     public uint Oxygen
     {
         get
         {
             // Validate the reference
-            if (m_PlayerData == null)
+            if (_playerData == null)
             {
                 Debug.LogError("PlayerData reference not set in Player script");
                 return 0u;
             }
 
             // Return the value
-            return m_PlayerData._oxygen;
+            return _playerData._oxygen;
         }
     }
 
@@ -55,14 +57,14 @@ public class Player : MonoBehaviour
         get
         {
             // Validate the reference
-            if (m_PlayerData == null)
+            if (_playerData == null)
             {
                 Debug.LogError("PlayerData reference not set in Player script");
                 return 0.0f;
             }
 
             // Return the value
-            return m_PlayerData._maxSpeed * m_Acceleration;
+            return _playerData._maxSpeed * m_Acceleration;
         }
     }
 
@@ -79,67 +81,19 @@ public class Player : MonoBehaviour
         get
         {
             // Validate the reference
-            if (m_PlayerData == null)
+            if (_playerData == null)
             {
                 Debug.LogError("PlayerData reference not set in Player script");
                 return 0.0f;
             }
             // Return the value
-            return m_PlayerData._directionalControl;
+            return _playerData._directionalControl;
         }
     }
 
-    private GameObject BubblePrefab
-    {
-        get
-        {
-            // Validate the reference
-            if (m_PlayerData == null)
-            {
-                Debug.LogError("PlayerData reference not set in Player script");
-                return null;
-            }
+    /* Movement Methods */
 
-            // Return the value
-            return m_PlayerData._bubblePrefab;
-        }
-    }
-
-    private float HitDuration
-    {
-        get
-        {
-            // Validate the reference
-            if (m_PlayerData == null)
-            {
-                Debug.LogError("PlayerData reference not set in Player script");
-                return 0.0f;
-            }
-
-            // Return the value
-            return m_PlayerData._hitboxDuration;
-        }
-    }
-
-    private float HitCooldown
-    {
-        get
-        {
-            // Validate the reference
-            if (m_PlayerData == null)
-            {
-                Debug.LogError("PlayerData reference not set in Player script");
-                return 0.0f;
-            }
-
-            // Return the value
-            return m_PlayerData._hitboxCooldown;
-        }
-    }
-
-    /* Input Methods */
-
-    private void OnMove(InputValue value)
+    void OnMove(InputValue value)
     {
         // Get the input value
         Vector2 input = value.Get<Vector2>().normalized;
@@ -148,6 +102,9 @@ public class Player : MonoBehaviour
         m_TargetDirection = new Vector3(input.x, 0.0f, input.y);
     }
 
+<<<<<<< Updated upstream
+    void Accelerate()
+=======
     private void OnFire()
     {
         if (m_BubbleCooldown > 0.0f) { return; }
@@ -170,41 +127,50 @@ public class Player : MonoBehaviour
     {
         // Enable the hit box
         m_HitBox.enabled = true;
+        
+        Debug.Log("Attack");
+
+        // Camera shake
+        ShakeCameraManager.Instance.ShakeCamera(_impulseSource);
     }
 
     /* Movement Methods */
 
     private void Accelerate()
+>>>>>>> Stashed changes
     {
         // Add the acceleration step to the current acceleration
-        m_Acceleration += m_PlayerData._accelerationStep * Time.deltaTime;
+        m_Acceleration += _playerData._accelerationStep * Time.deltaTime;
 
         // Clamp the acceleration to the range [0, 1]
         m_Acceleration = Mathf.Clamp(m_Acceleration, 0.0f, 1.0f);
     }
 
-    private void Decelerate()
+    void Decelerate()
     {
         // Subtract the acceleration step from the current acceleration
-        m_Acceleration -= m_PlayerData._accelerationStep * Time.deltaTime;
+        m_Acceleration -= _playerData._accelerationStep * Time.deltaTime;
 
         // Clamp the acceleration to the range [0, 1]
         m_Acceleration = Mathf.Clamp(m_Acceleration, 0.0f, 1.0f);
+
+        // If the acceleration is zero, make the move direction match the target direction
+        if (m_Acceleration == 0.0f)
+        {
+            m_MoveDirection = m_TargetDirection;
+        }
     }
 
-    private void LerpDirection()
+    void LerpDirection()
     {
         m_MoveDirection = Vector3.Lerp(m_MoveDirection, m_TargetDirection, DirectionalControl);
     }
 
-    private void MoveUpdate()
+    void MoveUpdate()
     {
-        // If there's no current movement, but there's a target direction,
-        // set the move direction to the target direction
-        if (m_MoveDirection == Vector3.zero) { m_MoveDirection = m_TargetDirection; }
-
         // Compare the move direction with the target direction
         bool sameDirection = m_MoveDirection == m_TargetDirection;
+
         bool opositeDirection = m_MoveDirection == -m_TargetDirection;
 
         // Check if there is no target direction
@@ -213,8 +179,11 @@ public class Player : MonoBehaviour
         // There isn't movement to be done
         if (noTarget && sameDirection) { return; }
 
+        // Accelerate if the directions are the same
+        if (sameDirection) { Accelerate(); }
+
         // If the directions are opposite to each other, decelerate
-        if (opositeDirection || noTarget)
+        else if (opositeDirection)
         {
             Decelerate();
         }
@@ -222,78 +191,33 @@ public class Player : MonoBehaviour
         // If the directions are different, lerp the direction
         else
         {
-            Accelerate();
             LerpDirection();
         }
 
-        if (DeltaMove != Vector3.zero) { Move(); }
+        Move();
     }
 
-    private void AtackUpdate()
-    {
-        // Check if the hitbox is active
-        if (m_HitBox.enabled)
-        {
-            // Add the time since the last frame to the active time
-            m_HitboxActiveTime += Time.deltaTime;
-
-            // Check if the active time is greater than the hit duration
-            if (m_HitboxActiveTime >= HitDuration)
-            {
-                // Disable the hitbox
-                m_HitBox.enabled = false;
-
-                // Reset the active time
-                m_HitboxActiveTime = 0.0f;
-
-                // Set the remaining cooldown
-                m_HitboxCooldown = HitCooldown;
-            }
-        }
-
-        // Check if the hitbox is on cooldown
-        if (m_HitboxCooldown > 0.0f)
-        {
-            // Subtract the time since the last frame from the remaining cooldown
-            m_HitboxCooldown -= Time.deltaTime;
-        }
-
-        // Check if the bubble is on cooldown
-        if (m_BubbleCooldown > 0.0f)
-        {
-            // Subtract the time since the last frame from the remaining cooldown
-            m_BubbleCooldown -= Time.deltaTime;
-        }
-    }
-
-    private void Move()
+    void Move()
     {
         // Move the player
         transform.Translate(DeltaMove);
     }
 
-    public void Stun(float seconds)
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
     {
-        m_StunnedTimer = seconds;
+
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
-        // Check if the player is stunned
-        if (m_StunnedTimer > 0.0f)
-        {
-            // Subtract the time since the last frame from the stunned timer
-            m_StunnedTimer -= Time.deltaTime;
-
-            // If the stunned timer is less than or equal to zero, reset the timer
-            if (m_StunnedTimer <= 0.0f) { m_StunnedTimer = 0.0f; }
-            else { return; }
-        }
-
         // Update the movement
         MoveUpdate();
+    }
 
-        // Update the attack
-        AtackUpdate();
+    // Update is called once per frame
+    void Update()
+    {
+
     }
 }
