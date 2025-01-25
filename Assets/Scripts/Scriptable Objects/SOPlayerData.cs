@@ -41,6 +41,9 @@ public class SOPlayerData : ScriptableObject
     [Tooltip("The range of the bubble in units")]
     public float _bubbleRange;
 
+    [Tooltip("Prefab of the bubble object")]
+    public GameObject _bubblePrefab;
+
 
     [Space(10)]
     [Header("Melee Combat Data")]
@@ -55,4 +58,13 @@ public class SOPlayerData : ScriptableObject
     [Tooltip("The amount of damage the melee attack does")]
     [Range(0, 10)]
     public uint _meleeDamage;
+
+    [Tooltip("The amount of time in seconds the player is invulnerable after being hit")]
+    public float _invulnerabilityDuration;
+
+    [Tooltip("The active time of the hitbox in seconds")]
+    public float _hitboxDuration;
+
+    [Tooltip("The cooldown time of the hitbox in seconds")]
+    public float _hitboxCooldown;
 }
