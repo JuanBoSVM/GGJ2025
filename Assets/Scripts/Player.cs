@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Unity.Cinemachine;
 
 public class Player : MonoBehaviour
 {
@@ -15,7 +16,25 @@ public class Player : MonoBehaviour
     private Vector3 m_MoveDirection = Vector3.zero;
     private Vector3 m_TargetDirection = Vector3.zero;
 
+<<<<<<< Updated upstream
+=======
+    /* Combat Members */
+
+    private float m_HitboxActiveTime = 0.0f;
+    private float m_HitboxCooldown = 0.0f;
+    private float m_BubbleCooldown = 0.0f;
+    private float m_StunnedTimer = 0.0f;
+
+    /* Cinemachine impulse source */
+    private CinemachineImpulseSource _impulseSource;
+
+>>>>>>> Stashed changes
     /* Accessors */
+
+    private void Start()
+    {
+        _impulseSource = GetComponent<CinemachineImpulseSource>();
+    }
 
     public uint Oxygen
     {
@@ -83,7 +102,42 @@ public class Player : MonoBehaviour
         m_TargetDirection = new Vector3(input.x, 0.0f, input.y);
     }
 
+<<<<<<< Updated upstream
     void Accelerate()
+=======
+    private void OnFire()
+    {
+        if (m_BubbleCooldown > 0.0f) { return; }
+
+        // Spawn the bubble prefab
+        Instantiate(BubblePrefab, transform.position, Quaternion.identity, transform);
+
+        // Validate the reference to the player data
+        if (m_PlayerData == null)
+        {
+            Debug.LogError("PlayerData reference not set in Player script");
+            return;
+        }
+
+        // Set the remaining cooldown
+        m_BubbleCooldown = m_PlayerData._bubbleCooldown;
+    }
+
+    private void OnAttack()
+    {
+        // Enable the hit box
+        m_HitBox.enabled = true;
+        
+        Debug.Log("Attack");
+
+        // Camera shake
+        ShakeCameraManager.Instance.ShakeCamera(_impulseSource);
+    }
+
+    /* Movement Methods */
+
+    private void Accelerate()
+>>>>>>> Stashed changes
     {
         // Add the acceleration step to the current acceleration
         m_Acceleration += _playerData._accelerationStep * Time.deltaTime;

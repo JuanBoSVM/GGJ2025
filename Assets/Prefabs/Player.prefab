@@ -14,7 +14,11 @@ GameObject:
   - component: {fileID: 6713347438625665833}
   - component: {fileID: -3595061489821287003}
   - component: {fileID: 197369412036885621}
+<<<<<<< Updated upstream
   - component: {fileID: -6227425650841231079}
+=======
+  - component: {fileID: 3566610664255236553}
+>>>>>>> Stashed changes
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -160,7 +164,11 @@ MonoBehaviour:
   m_PlayerInput: {fileID: -3595061489821287003}
   m_Collider: {fileID: 6839296898188252481}
   m_HitBox: {fileID: 6713347438625665833}
+<<<<<<< Updated upstream
 --- !u!114 &-6227425650841231079
+=======
+--- !u!114 &3566610664255236553
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -213,4 +221,7 @@ MonoBehaviour:
     DissipationDistance: 100
     PropagationSpeed: 343
   DefaultVelocity: {x: 0, y: -1, z: 0}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
