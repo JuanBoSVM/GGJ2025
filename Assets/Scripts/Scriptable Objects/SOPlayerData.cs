@@ -59,6 +59,13 @@ public class SOPlayerData : ScriptableObject
     [Range(0, 10)]
     public uint _meleeDamage;
 
+    [Tooltip("The speed multiplier for the bubble when attacking it")]
+    public float _parryMultiplier;
+
+    [Tooltip("Chance to parry the bubble")]
+    [Range(0.0f, 1.0f)]
+    public float _parryChance;
+
     [Tooltip("The amount of time in seconds the player is invulnerable after being hit")]
     public float _invulnerabilityDuration;
 

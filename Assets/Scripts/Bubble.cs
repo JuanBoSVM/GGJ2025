@@ -15,9 +15,10 @@ public class Bubble : MonoBehaviour
     private float m_TraveledDistance = 0.0f;
     private Vector3 m_MoveDirection = Vector3.zero;
 
-    /* Type Members */
+    /* Other Members */
 
     private bool m_IsHealthBubble = false;
+    private float m_SpeedMultiplier = 1.0f;
 
     /* Accessors */
 
@@ -49,7 +50,7 @@ public class Bubble : MonoBehaviour
             }
             // Return the speed
 
-            return m_BubbleData._speed;
+            return m_BubbleData._speed * m_SpeedMultiplier;
         }
     }
 
@@ -69,7 +70,7 @@ public class Bubble : MonoBehaviour
         }
     }
 
-    private float StunDuration
+    public float StunDuration
     {
         get
         {
@@ -85,7 +86,7 @@ public class Bubble : MonoBehaviour
         }
     }
 
-    private uint OxygenRestored
+    public uint OxygenRestored
     {
         get
         {
@@ -138,6 +139,18 @@ public class Bubble : MonoBehaviour
     public void Corrupt()
     {
         m_IsHealthBubble = false;
+    }
+
+    public void Parry(Vector3 direction, float speedMultiplier = 1.0f)
+    {
+        // Change the direction of the bubble
+        m_MoveDirection = direction;
+
+        // Reset the traveled distance
+        m_TraveledDistance = 0.0f;
+
+        // Accelerate the bubble
+        m_SpeedMultiplier += speedMultiplier;
     }
 
     private void Start()

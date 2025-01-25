@@ -32,6 +32,7 @@ public class Player : MonoBehaviour
 
     /* Combat Members */
 
+    private uint m_DamageTaken = 0u;
     private float m_HitboxActiveTime = 0.0f;
     private float m_HitboxCooldown = 0.0f;
     private float m_BubbleCooldown = 0.0f;
@@ -51,20 +52,7 @@ public class Player : MonoBehaviour
             }
 
             // Return the value
-            return m_PlayerData._oxygen;
-        }
-
-        private set
-        {
-            // Validate the reference
-            if (m_PlayerData == null)
-            {
-                Debug.LogError("PlayerData reference not set in Player script");
-                return;
-            }
-
-            // Set the value
-            m_PlayerData._oxygen = value;
+            return m_PlayerData._oxygen - m_DamageTaken;
         }
     }
 
@@ -171,6 +159,38 @@ public class Player : MonoBehaviour
         }
     }
 
+    private float ParryMultiplier
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._parryMultiplier;
+        }
+    }
+
+    private float ParryChance
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._parryChance;
+        }
+    }
+
     private Vector3 KnockbackDirection
     {
         get
@@ -262,6 +282,28 @@ public class Player : MonoBehaviour
 
                 // Knock the player back
                 player.KnockBack(KnockbackDirection, MeleeDamage);
+            }
+        }
+
+        // Check if the other collider is a bubble
+        else if (other.gameObject.CompareTag("Bubble"))
+        {
+            // Get the bubble script
+            Bubble bubble = other.gameObject.GetComponent<Bubble>();
+
+            // Check if the bubble script is valid
+            if (bubble != null)
+            {
+                // Validate the reference to the player data
+                if (m_PlayerData == null)
+                {
+                    Debug.LogError("Bubble script component missing");
+                    return;
+                }
+
+                // Randomly determine if the player will parry the bubble or pop it
+                if (Random.value > ParryChance) { Destroy(bubble.gameObject); }
+                else { bubble.Parry(transform.forward, ParryMultiplier); }
             }
         }
     }
@@ -380,13 +422,13 @@ public class Player : MonoBehaviour
         transform.position += direction;
 
         // Decrease the player's oxygen
-        Oxygen -= damage;
+        m_DamageTaken += damage;
     }
 
     public void Heal(uint amount)
     {
         // Increase the player's oxygen
-        Oxygen += amount;
+        m_DamageTaken -= amount;
     }
 
     private void Start()
