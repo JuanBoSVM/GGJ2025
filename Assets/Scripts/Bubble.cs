@@ -13,6 +13,7 @@ public class Bubble : MonoBehaviour
 
     /* Movement Members */
     private float m_TraveledDistance = 0.0f;
+    private Vector3 m_MoveDirection = Vector3.zero;
 
     /* Accessors */
 
@@ -28,12 +29,11 @@ public class Bubble : MonoBehaviour
             }
 
             // Return the delta move
-            return transform.forward * m_BubbleData._speed * Time.fixedDeltaTime;
+            return m_MoveDirection * m_BubbleData._speed * Time.fixedDeltaTime;
         }
     }
 
-
-    private void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter(Collider other)
     {
         // Check if the collider is the player
         if (other.gameObject.CompareTag("Player") && other.gameObject != m_Shooter)
@@ -57,8 +57,8 @@ public class Bubble : MonoBehaviour
             }
         }
 
-        // Destroy the bubble
-        Destroy(gameObject);
+        // Destroy the bubble if it hits anything other than the shooter
+        if (other.gameObject != m_Shooter) { Destroy(gameObject); }
     }
 
     private void Start()
@@ -68,6 +68,9 @@ public class Bubble : MonoBehaviour
 
         // Remove the bubble from its parent
         transform.parent = null;
+
+        // Match the rotation of the shooter
+        m_MoveDirection = m_Shooter.transform.forward;
     }
 
     private void FixedUpdate()

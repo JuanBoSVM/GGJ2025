@@ -53,6 +53,19 @@ public class Player : MonoBehaviour
             // Return the value
             return m_PlayerData._oxygen;
         }
+
+        private set
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return;
+            }
+
+            // Set the value
+            m_PlayerData._oxygen = value;
+        }
     }
 
     public float Speed
@@ -142,6 +155,38 @@ public class Player : MonoBehaviour
         }
     }
 
+    private uint MeleeDamage
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0u;
+            }
+
+            // Return the value
+            return m_PlayerData._meleeDamage;
+        }
+    }
+
+    private Vector3 KnockbackDirection
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return Vector3.zero;
+            }
+
+            // Return the value
+            return transform.forward * m_PlayerData._knockbackForce;
+        }
+    }
+
     /* Input Methods */
 
     private void OnMove(InputValue value)
@@ -175,8 +220,50 @@ public class Player : MonoBehaviour
     {
         // Enable the hit box
         m_HitBox.enabled = true;
+    }
 
-        ShakeCameraManager.Instance.ShakeCamera(m_ImpulseSource);
+    private void OnLook(InputValue value)
+    {
+        // Determine if the input scheme is a mouse or a gamepad
+        bool isGamepad = m_PlayerInput.currentControlScheme == "Gamepad";
+
+        // Get the input value
+        Vector2 input = value.Get<Vector2>().normalized;
+
+        if (!isGamepad)
+        {
+            // TODO: Implement mouse look
+        }
+
+        // Rotate the player to look at the target direction
+        transform.LookAt(transform.position + new Vector3(input.x, 0.0f, input.y));
+    }
+
+    public void OnTriggerEnter(Collider other)
+    {
+        // Check if the other collider is a player
+        if (other.gameObject.CompareTag("Player"))
+        {
+            // Shake the camera
+            ShakeCameraManager.Instance.ShakeCamera(m_ImpulseSource);
+
+            // Get the player script
+            Player player = other.gameObject.GetComponent<Player>();
+
+            // Check if the player script is valid
+            if (player != null)
+            {
+                // Validate the reference to the player data
+                if (m_PlayerData == null)
+                {
+                    Debug.LogError("PlayerData reference not set in Player script");
+                    return;
+                }
+
+                // Knock the player back
+                player.KnockBack(KnockbackDirection, MeleeDamage);
+            }
+        }
     }
 
     /* Movement Methods */
@@ -278,13 +365,22 @@ public class Player : MonoBehaviour
 
     private void Move()
     {
-        // Move the player
-        transform.Translate(DeltaMove);
+        // Move the player in world space
+        transform.position += DeltaMove;
     }
 
     public void Stun(float seconds)
     {
         m_StunnedTimer = seconds;
+    }
+
+    public void KnockBack(Vector3 direction, uint damage = 0u)
+    {
+        // Move the player in the knockback direction
+        transform.position += direction;
+
+        // Decrease the player's oxygen
+        Oxygen -= damage;
     }
 
     private void Start()
