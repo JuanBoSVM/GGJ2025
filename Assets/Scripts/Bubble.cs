@@ -55,10 +55,11 @@ public class Bubble : MonoBehaviour
                 // Stun the player
                 player.Stun(m_BubbleData._stunDuration);
 
-                // Destroy the bubble
-                Destroy(gameObject);
             }
         }
+
+        // Destroy the bubble
+        Destroy(gameObject);
     }
 
     private void Start()
