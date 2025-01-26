@@ -634,6 +634,25 @@ public class Player : MonoBehaviour
         }
     }
 
+    public void Hurt(uint amount)
+    {
+        // Increase the player's oxygen
+        m_DamageTaken += amount;
+    }
+
+    public void Kill()
+    {
+        // Validate the reference to the player data
+        if (m_PlayerData == null)
+        {
+            Debug.LogError("PlayerData reference not set in Player script");
+            return;
+        }
+
+        // Set the player's oxygen to zero
+        m_DamageTaken = m_PlayerData._oxygen;
+    }
+
     public void Heal(uint amount)
     {
         // Increase the player's oxygen
@@ -701,7 +720,7 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (TickTimer(ref m_StunnedTimer)) { return; }
+        if (TickTimer(ref m_StunnedTimer) || Oxygen == 0u) { return; }
 
         // Update the movement
         MoveUpdate();
