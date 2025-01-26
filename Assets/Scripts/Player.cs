@@ -560,7 +560,7 @@ public class Player : MonoBehaviour
                 if (player != null)
                 {
                     // Knock the player back as a coroutine
-                    StartCoroutine(player.KnockBack(KnockbackDelta, MeleeDamage));
+                    StartCoroutine(player.KnockBack(KnockbackDelta, KnockbackDuration, MeleeDamage));
                 }
 
                 continue;
@@ -601,7 +601,7 @@ public class Player : MonoBehaviour
         m_Hittables.Clear();
     }
 
-    public IEnumerator KnockBack(Vector3 direction, uint damage = 0u)
+    public IEnumerator KnockBack(Vector3 direction, float duration, uint damage = 0u)
     {
         // Check if the player is invulnerable
         if (!TickTimer(ref m_InvulnerabilityTimer))
@@ -614,7 +614,7 @@ public class Player : MonoBehaviour
             while (distanceMoved < direction.magnitude)
             {
                 // Calculate the movement for the frame
-                frameMove = direction * Time.deltaTime / KnockbackDuration;
+                frameMove = direction * Time.deltaTime / duration;
 
                 // Move the player in the knockback direction
                 transform.position += frameMove;
