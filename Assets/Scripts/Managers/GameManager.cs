@@ -15,6 +15,16 @@ public class GameManager : MonoBehaviour
     [System.NonSerialized]
     public List<uint> m_PlayerSkinsID = new List<uint>();
 
+    public uint GetPlayerSkinID(uint playerID)
+    {
+        if (playerID > m_PlayerSkinsID.Count)
+        {
+            Debug.LogError("Player ID out of range");
+            return 0;
+        }
+
+        return m_PlayerSkinsID[(int)playerID];
+    }
 
     // Accessor for the GameManager instance
     public static GameManager Instance
