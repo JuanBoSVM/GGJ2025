@@ -547,6 +547,8 @@ public class Player : MonoBehaviour
             // Ignore the player itself
             if (hittable == gameObject) { continue; }
 
+            if (hittable == null) { continue; }
+
             // Check if the other collider is a player
             if (hittable.CompareTag("Player"))
             {
@@ -638,6 +640,9 @@ public class Player : MonoBehaviour
     {
         // Increase the player's oxygen
         m_DamageTaken += amount;
+
+        // Check if the player is dead
+        if (Oxygen == 0u) { Kill(); }
     }
 
     public void Kill()
@@ -649,8 +654,15 @@ public class Player : MonoBehaviour
             return;
         }
 
+        // Unlink the player from the input system
+        m_PlayerInput.DeactivateInput();
+        m_PlayerInput.user.UnpairDevices();
+
         // Set the player's oxygen to zero
         m_DamageTaken = m_PlayerData._oxygen;
+
+        // Invoke the death event
+        OnDeath?.Invoke(m_PlayerID);
     }
 
     public void Heal(uint amount)
@@ -738,20 +750,11 @@ public class Player : MonoBehaviour
         CombatUpdate();
 
         // Update the player oxygen
-        if (Oxygen > 0)
+        if (Oxygen > 0 && !TickTimer(ref m_OxygenTimer))
         {
-            if (!TickTimer(ref m_OxygenTimer))
-            {
-                // Reset the timer and take damage
-                m_OxygenTimer = OxygenDuration;
-                m_DamageTaken++;
-            }
-        }
-
-        else
-        {
-            // Send the death signal
-            OnDeath?.Invoke(m_PlayerID);
+            // Reset the timer and take damage
+            m_OxygenTimer = OxygenDuration;
+            Hurt(1u);
         }
     }
 }

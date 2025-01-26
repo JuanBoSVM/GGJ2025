@@ -151,7 +151,7 @@ MonoBehaviour:
   m_IsGlobal: 1
   priority: 0
   blendDistance: 0
-  weight: 1
+  weight: 0.606
   sharedProfile: {fileID: 11400000, guid: ab09877e2e707104187f6f83e2f62510, type: 2}
 --- !u!4 &298869654
 Transform:
@@ -752,6 +752,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2797345485105256573, guid: 8ecca3dfb7eb76c41a5d04657b9ec533, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 013a3d2cef5354c45a6411abc8d1c6c6, type: 2}
     - target: {fileID: 3566610664255236553, guid: 8ecca3dfb7eb76c41a5d04657b9ec533, type: 3}
       propertyPath: DefaultVelocity.x
       value: 1

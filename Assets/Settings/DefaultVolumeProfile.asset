@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5485954d14dfb9a4c8ead8edb0ded5b1, type: 3}
   m_Name: LiftGammaGain
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   lift:
     m_OverrideState: 1
-    m_Value: {x: 0.60138464, y: 0.6740381, z: 1, w: 0.22516537}
+    m_Value: {x: 0.78556013, y: 0.84824926, z: 1, w: 0.7005253}
   gamma:
     m_OverrideState: 1
-    m_Value: {x: 0.4327668, y: 0.6310387, z: 1, w: -0.51125836}
+    m_Value: {x: 0.824716, y: 0.917884, z: 1, w: -0.87565666}
   gain:
     m_OverrideState: 1
-    m_Value: {x: 0.38867038, y: 0.51926416, z: 1, w: -0.21465093}
+    m_Value: {x: 0.8300643, y: 0.9341959, z: 1, w: -0.64798594}
 --- !u!114 &-8270506406425502121
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -43,7 +43,7 @@ MonoBehaviour:
     m_Value: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   balance:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: -21
 --- !u!114 &-8104416584915340131
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -164,7 +164,7 @@ MonoBehaviour:
     m_Value: 0
   contrast:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: -34
   colorFilter:
     m_OverrideState: 1
     m_Value: {r: 1, g: 1, b: 1, a: 1}
@@ -211,7 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97c23e3b12dc18c42a140437e53d3951, type: 3}
   m_Name: Tonemapping
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   mode:
     m_OverrideState: 1
     m_Value: 0
@@ -366,10 +366,10 @@ MonoBehaviour:
     m_Value: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.5
+    m_Value: 0
   scatter:
     m_OverrideState: 1
-    m_Value: 0.544
+    m_Value: 0.641
   clamp:
     m_OverrideState: 1
     m_Value: 65472
@@ -407,10 +407,10 @@ MonoBehaviour:
   active: 1
   temperature:
     m_OverrideState: 1
-    m_Value: -74
+    m_Value: -100
   tint:
     m_OverrideState: 1
-    m_Value: 45
+    m_Value: 100
 --- !u!114 &-581120513425526550
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -477,7 +477,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06437c1ff663d574d9447842ba0a72e4, type: 3}
   m_Name: ScreenSpaceLensFlare
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   intensity:
     m_OverrideState: 1
     m_Value: 0
@@ -531,7 +531,7 @@ MonoBehaviour:
     m_Value: 4
   chromaticAbberationIntensity:
     m_OverrideState: 1
-    m_Value: 0.5
+    m_Value: 0.427
 --- !u!114 &1052315754049611418
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -544,16 +544,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 558a8e2b6826cf840aae193990ba9f2e, type: 3}
   m_Name: ShadowsMidtonesHighlights
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   shadows:
     m_OverrideState: 1
-    m_Value: {x: 0.11893314, y: 0.20744096, z: 1, w: 0.19138744}
+    m_Value: {x: 0.9716117, y: 0.9277259, z: 1, w: 0.5078808}
   midtones:
     m_OverrideState: 1
-    m_Value: {x: 0.68249273, y: 1, z: 0.9071963, w: 0.86622506}
+    m_Value: {x: 0.977222, y: 0.9721094, z: 1, w: 1}
   highlights:
     m_OverrideState: 1
-    m_Value: {x: 0.9402232, y: 0.97180474, z: 1, w: -0.04306174}
+    m_Value: {x: 0.9402232, y: 0.97180474, z: 1, w: 0.8406304}
   shadowsStart:
     m_OverrideState: 1
     m_Value: 0
@@ -767,7 +767,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e021b4c809a781e468c2988c016ebbea, type: 3}
   m_Name: ColorLookup
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   texture:
     m_OverrideState: 1
     m_Value: {fileID: 0}
@@ -811,7 +811,7 @@ MonoBehaviour:
     m_Value: 6.1
   focalLength:
     m_OverrideState: 1
-    m_Value: 125
+    m_Value: 72
   bladeCount:
     m_OverrideState: 1
     m_Value: 5
@@ -887,7 +887,7 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.47
+    m_Value: 0.216
   smoothness:
     m_OverrideState: 1
     m_Value: 1
@@ -934,34 +934,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdfbdbb87d3286943a057f7791b43141, type: 3}
   m_Name: ChannelMixer
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   redOutRedIn:
     m_OverrideState: 1
-    m_Value: 20
+    m_Value: -60
   redOutGreenIn:
-    m_OverrideState: 1
-    m_Value: 0
+    m_OverrideState: 0
+    m_Value: -200
   redOutBlueIn:
-    m_OverrideState: 1
-    m_Value: 0
+    m_OverrideState: 0
+    m_Value: -191
   greenOutRedIn:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
   greenOutGreenIn:
     m_OverrideState: 1
-    m_Value: 68
+    m_Value: 42
   greenOutBlueIn:
-    m_OverrideState: 1
-    m_Value: 0
+    m_OverrideState: 0
+    m_Value: 3
   blueOutRedIn:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
   blueOutGreenIn:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
   blueOutBlueIn:
     m_OverrideState: 1
-    m_Value: 100
+    m_Value: 77
 --- !u!114 &9122958982931076880
 MonoBehaviour:
   m_ObjectHideFlags: 3

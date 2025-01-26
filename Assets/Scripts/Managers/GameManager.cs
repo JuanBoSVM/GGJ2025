@@ -15,6 +15,14 @@ public class GameManager : MonoBehaviour
     [System.NonSerialized]
     public List<uint> m_PlayerSkinsID = new List<uint>();
 
+    [SerializeField]
+    GameObject m_P1Spawn;
+
+    [SerializeField]
+    GameObject m_P2Spawn;
+
+    private bool m_P1Spawned = false;
+
     public uint GetPlayerSkinID(uint playerID)
     {
         if (playerID > m_PlayerSkinsID.Count)
@@ -24,6 +32,17 @@ public class GameManager : MonoBehaviour
         }
 
         return m_PlayerSkinsID[(int)playerID];
+    }
+
+    public uint GetScore(uint playerID)
+    {
+        if (playerID > m_Scores.Count)
+        {
+            Debug.LogError("Player ID out of range");
+            return 0;
+        }
+
+        return m_Scores[(int)playerID];
     }
 
     // Accessor for the GameManager instance
@@ -56,6 +75,18 @@ public class GameManager : MonoBehaviour
         // Check the action map its using
         if (playerInput.defaultActionMap != "Player") { return; }
 
+        // Move it to the spawn point
+        if (!m_P1Spawned)
+        {
+            playerInput.transform.position = m_P1Spawn.transform.position;
+            m_P1Spawned = true;
+        }
+
+        else
+        {
+            playerInput.transform.position = m_P2Spawn.transform.position;
+        }
+
         // Get the player component
         Player player = playerInput.gameObject.GetComponent<Player>();
 
@@ -70,7 +101,7 @@ public class GameManager : MonoBehaviour
         m_Players.Add(player);
 
         // Set the player's ID
-        player.SetID((uint)m_Players.Count);
+        player.SetID((uint)m_Players.Count - 1);
 
         // Change the game object's name
         player.gameObject.name = "Player " + m_Players.Count;
@@ -81,12 +112,31 @@ public class GameManager : MonoBehaviour
 
     void OnPlayerDeath(uint id)
     {
-        Debug.Log("Player " + id + " has died");
+        m_P1Spawned = false;
+
+        // Increase the score of the other player
+        m_Scores[(int)(id == 1 ? 0 : 1)]++;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // Find all the other game managers in the scene
+        GameManager[] gameManagers = FindObjectsByType<GameManager>(FindObjectsSortMode.None);
+
+        foreach (GameManager gameManager in gameManagers)
+        {
+            // Delete all non original managers
+            if (gameManager != Instance)
+            {
+                Destroy(gameManager.gameObject);
+            }
+        }
+
+        // Initialize the scores
+        m_Scores.Add(0);
+        m_Scores.Add(0);
+
         // Make the GameManager persist between scenes
         DontDestroyOnLoad(gameObject);
     }
