@@ -7,8 +7,24 @@ public class GameManager : MonoBehaviour
     // Instance of the GameManager
     private static GameManager _instance;
 
-    // List of the player game objects
+    // List of the player game objects and its scores
     private List<Player> m_Players = new List<Player>();
+    private List<uint> m_Scores = new List<uint>();
+
+    // Public list not serialized
+    [System.NonSerialized]
+    public List<uint> m_PlayerSkinsID = new List<uint>();
+
+    public uint GetPlayerSkinID(uint playerID)
+    {
+        if (playerID > m_PlayerSkinsID.Count)
+        {
+            Debug.LogError("Player ID out of range");
+            return 0;
+        }
+
+        return m_PlayerSkinsID[(int)playerID];
+    }
 
     // Accessor for the GameManager instance
     public static GameManager Instance
@@ -37,6 +53,9 @@ public class GameManager : MonoBehaviour
 
     void OnPlayerJoined(PlayerInput playerInput)
     {
+        // Check the action map its using
+        if (playerInput.defaultActionMap != "Player") { return; }
+
         // Get the player component
         Player player = playerInput.gameObject.GetComponent<Player>();
 
