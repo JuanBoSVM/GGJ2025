@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _oxygenRestored: 0
   _stunDuration: 1
-  _speed: 0.1
-  _range: 10
+  _speed: 10
+  _range: 20
