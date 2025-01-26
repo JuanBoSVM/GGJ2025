@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
+using System.Collections.Generic;
+using System.Collections;
 
 public class Player : MonoBehaviour
 {
@@ -18,16 +20,11 @@ public class Player : MonoBehaviour
     private PlayerInput m_PlayerInput;
 
     [SerializeField]
-    [Tooltip("The collider component of the player")]
-    private CapsuleCollider m_Collider;
-
-    [SerializeField]
-    [Tooltip("The collider component of the melee attack")]
-    private BoxCollider m_HitBox;
-
-    [SerializeField]
     [Tooltip("Component that sends the signal to the camera")]
     private CinemachineImpulseSource m_ImpulseSource;
+
+    // List of hittable objects
+    private List<GameObject> m_Hittables = new List<GameObject>();
 
     /* Other Members */
 
@@ -45,12 +42,12 @@ public class Player : MonoBehaviour
     /* Combat Members */
 
     private uint m_DamageTaken = 0u;
-    private float m_HitboxActiveTime = 0.0f;
     private float m_HitboxCooldown = 0.0f;
     private float m_BubbleCooldown = 0.0f;
 
     /* Timers */
 
+    private float m_HitboxTimer = 0.0f;
     private float m_OxygenTimer = 0.0f;
     private float m_StunnedTimer = 0.0f;
     private float m_InvulnerabilityTimer = 0.0f;
@@ -126,6 +123,22 @@ public class Player : MonoBehaviour
 
             // Return the value
             return m_PlayerData._bubblePrefab;
+        }
+    }
+
+    private float BubbleCooldown
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._bubbleCooldown;
         }
     }
 
@@ -209,7 +222,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private Vector3 KnockbackDirection
+    private Vector3 KnockbackDelta
     {
         get
         {
@@ -221,7 +234,23 @@ public class Player : MonoBehaviour
             }
 
             // Return the value
-            return transform.forward * m_PlayerData._knockbackForce;
+            return transform.forward * m_PlayerData._knockbackDistance;
+        }
+    }
+
+    private float KnockbackDuration
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._knockbackDuration;
         }
     }
 
@@ -305,10 +334,36 @@ public class Player : MonoBehaviour
         }
     }
 
+    private float StunReduction
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._stunReduction;
+        }
+    }
+
+    /* Setup Methods */
+
+    public void SetID(uint id)
+    {
+        m_PlayerID = id;
+    }
+
     /* Events */
 
     private void OnMove(InputValue value)
     {
+        // Reduce stun timer
+        if (m_StunnedTimer > 0.0f) { m_StunnedTimer -= StunReduction; }
+
         // Buffer inputs during the dash
         if (m_DashTimer > 0.0f)
         {
@@ -330,6 +385,9 @@ public class Player : MonoBehaviour
         // Spawn the bubble prefab
         Instantiate(BubblePrefab, transform.position, Quaternion.identity, transform);
 
+        // Take damage from the bubble
+        m_DamageTaken++;
+
         // Validate the reference to the player data
         if (m_PlayerData == null)
         {
@@ -338,13 +396,13 @@ public class Player : MonoBehaviour
         }
 
         // Set the remaining cooldown
-        m_BubbleCooldown = m_PlayerData._bubbleCooldown;
+        m_BubbleCooldown = BubbleCooldown;
     }
 
     private void OnAttack()
     {
-        // Enable the hit box
-        m_HitBox.enabled = true;
+        // Set the hitbox timer if it's not on cooldown
+        if (m_HitboxCooldown == 0.0f) { m_HitboxTimer = HitDuration; }
     }
 
     private void OnLook(InputValue value)
@@ -366,51 +424,14 @@ public class Player : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
-        // Check if the other collider is a player
-        if (other.gameObject.CompareTag("Player"))
-        {
-            // Shake the camera
-            ShakeCameraManager.Instance.ShakeCamera(m_ImpulseSource);
+        // Add the GameObject to the list of hittables
+        m_Hittables.Add(other.gameObject);
+    }
 
-            // Get the player script
-            Player player = other.gameObject.GetComponent<Player>();
-
-            // Check if the player script is valid
-            if (player != null)
-            {
-                // Validate the reference to the player data
-                if (m_PlayerData == null)
-                {
-                    Debug.LogError("PlayerData reference not set in Player script");
-                    return;
-                }
-
-                // Knock the player back
-                player.KnockBack(KnockbackDirection, MeleeDamage);
-            }
-        }
-
-        // Check if the other collider is a bubble
-        else if (other.gameObject.CompareTag("Bubble"))
-        {
-            // Get the bubble script
-            Bubble bubble = other.gameObject.GetComponent<Bubble>();
-
-            // Check if the bubble script is valid
-            if (bubble != null)
-            {
-                // Validate the reference to the player data
-                if (m_PlayerData == null)
-                {
-                    Debug.LogError("Bubble script component missing");
-                    return;
-                }
-
-                // Randomly determine if the player will parry the bubble or pop it
-                if (Random.value > ParryChance) { Destroy(bubble.gameObject); }
-                else { bubble.Parry(transform.forward, ParryMultiplier); }
-            }
-        }
+    public void OnTriggerExit(Collider other)
+    {
+        // Remove the GameObject from the list of hittables
+        m_Hittables.Remove(other.gameObject);
     }
 
     private void OnDash(InputValue value)
@@ -438,10 +459,10 @@ public class Player : MonoBehaviour
             {
                 // Reduce the dash timer to zero
                 m_DashTimer = 0.0f;
-
-                // Reset the speed multiplier
-                m_SpeedMultiplier = 1.0f;
             }
+
+            // End the dash
+            EndDash();
         }
     }
 
@@ -473,53 +494,186 @@ public class Player : MonoBehaviour
         m_MoveDirection = Vector3.Lerp(m_MoveDirection, m_TargetDirection, DirectionalControl);
     }
 
+    private void EndDash()
+    {
+        // Load the buffered direction
+        m_TargetDirection = m_BufferedDirection;
+
+        // Reset the buffered direction
+        m_BufferedDirection = Vector3.zero;
+
+        // Reset the speed multiplier
+        m_SpeedMultiplier = 1.0f;
+    }
+
+    // Return true if the timer is greater than zero
+    private bool TickTimer(ref float timer)
+    {
+        if (timer > 0.0f)
+        {
+            // Subtract the time since the last frame from the timer
+            timer -= Time.deltaTime;
+
+            // Limit the timer to 0.0f
+            if (timer < 0.0f)
+            {
+                timer = 0.0f;
+
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void Move()
+    {
+        // Move the player in world space
+        transform.position += DeltaMove;
+    }
+
+    /* Combat Methods */
+
+    private void ScanForHittables()
+    {
+        // Check if there are no hittables
+        if (m_Hittables.Count == 0) { return; }
+
+        // Loop through the hittables list
+        foreach (GameObject hittable in m_Hittables)
+        {
+            // Ignore the player itself
+            if (hittable == gameObject) { continue; }
+
+            // Check if the other collider is a player
+            if (hittable.CompareTag("Player"))
+            {
+                // Shake the camera
+                ShakeCameraManager.Instance.ShakeCamera(m_ImpulseSource);
+
+                // Get the player script
+                Player player = hittable.GetComponent<Player>();
+
+                // Check if the player script is valid
+                if (player != null)
+                {
+                    // Knock the player back as a coroutine
+                    StartCoroutine(player.KnockBack(KnockbackDelta, MeleeDamage));
+                }
+
+                continue;
+            }
+
+            // Check if the other collider is a bubble
+            if (hittable.CompareTag("Bubble"))
+            {
+                // Get the bubble script
+                Bubble bubble = hittable.GetComponent<Bubble>();
+
+                // Check if the bubble script is valid
+                if (bubble != null)
+                {
+                    // Randomly determine if the player will parry the bubble or pop it
+                    if (Random.value > ParryChance) { Destroy(bubble.gameObject); }
+
+                    else
+                    {
+                        bubble.Redirect(transform.forward, ParryMultiplier);
+
+                        // Also change ownership of the bubble
+                        bubble.SetOwner(gameObject);
+                    }
+                }
+            }
+        }
+
+        // Clear the hittables list
+        m_Hittables.Clear();
+    }
+
+    public void Stun(float seconds)
+    {
+        m_StunnedTimer = seconds;
+
+        // Clear the hittables list
+        m_Hittables.Clear();
+    }
+
+    public IEnumerator KnockBack(Vector3 direction, uint damage = 0u)
+    {
+        // Check if the player is invulnerable
+        if (!TickTimer(ref m_InvulnerabilityTimer))
+        {
+            float distanceMoved = 0.0f;
+
+            Vector3 frameMove;
+
+            // Continue moving the player in the knockback direction
+            while (distanceMoved < direction.magnitude)
+            {
+                // Calculate the movement for the frame
+                frameMove = direction * Time.deltaTime / KnockbackDuration;
+
+                // Move the player in the knockback direction
+                transform.position += frameMove;
+
+                // Increase the distance moved
+                distanceMoved += frameMove.magnitude;
+
+                // Yield until the next frame
+                yield return null;
+            }
+
+            // Decrease the player's oxygen
+            m_DamageTaken += damage;
+
+            // Become invulnerable for the determined time
+            m_InvulnerabilityTimer = InvulnerabilityTime;
+        }
+    }
+
+    public void Hurt(uint amount)
+    {
+        // Increase the player's oxygen
+        m_DamageTaken += amount;
+    }
+
+    public void Kill()
+    {
+        // Validate the reference to the player data
+        if (m_PlayerData == null)
+        {
+            Debug.LogError("PlayerData reference not set in Player script");
+            return;
+        }
+
+        // Set the player's oxygen to zero
+        m_DamageTaken = m_PlayerData._oxygen;
+    }
+
+    public void Heal(uint amount)
+    {
+        // Increase the player's oxygen
+        m_DamageTaken -= amount;
+    }
+
+    /* Game Loop */
+
     private void MoveUpdate()
     {
         // If there's no current movement, but there's a target direction,
         // set the move direction to the target direction
         if (m_MoveDirection == Vector3.zero) { m_MoveDirection = m_TargetDirection; }
 
-        // Check if the dash is active
-        if (m_DashTimer > 0.0f)
-        {
-            // Subtract the time since the last frame from the dash timer
-            m_DashTimer -= Time.deltaTime;
+        // Tick the timers
+        TickTimer(ref m_DashTimer);
+        if (m_DashCooldown > 0.0f && !TickTimer(ref m_DashCooldown)) { EndDash(); }
 
-            // Clamp the dash timer to the range [0, DashDuration]
-            m_DashTimer = Mathf.Clamp(m_DashTimer, 0.0f, DashDuration);
-
-            // Check if the dash timer is zero
-            if (m_DashTimer == 0.0f)
-            {
-                // Load the buffered direction if there's one
-                if (m_BufferedDirection != Vector3.zero)
-                {
-                    m_TargetDirection = m_BufferedDirection;
-
-                    // Reset the buffered direction
-                    m_BufferedDirection = Vector3.zero;
-                }
-
-                // Reset the speed multiplier
-                m_SpeedMultiplier = 1.0f;
-            }
-        }
-
-        // Check if the dash is on cooldown
-        if (m_DashCooldown > 0.0f)
-        {
-            // Subtract the time since the last frame from the dash cooldown
-            m_DashCooldown -= Time.deltaTime;
-
-            // Clamp the dash cooldown to the range [0, DashCooldown]
-            m_DashCooldown = Mathf.Clamp(m_DashCooldown, 0.0f, DashCooldown);
-        }
-
-        // Compare the move direction with the target direction
+        // Directional control variables
         bool sameDirection = m_MoveDirection == m_TargetDirection;
         bool opositeDirection = m_MoveDirection == -m_TargetDirection;
-
-        // Check if there is no target direction
         bool noTarget = m_TargetDirection == Vector3.zero;
 
         // There isn't movement to be done
@@ -541,82 +695,16 @@ public class Player : MonoBehaviour
         if (DeltaMove != Vector3.zero) { Move(); }
     }
 
-    private void AtackUpdate()
+    private void CombatUpdate()
     {
-        // Check if the hitbox is active
-        if (m_HitBox.enabled)
+        // Tick the hitbox timers and scan for hittables if it's active
+        if (TickTimer(ref m_HitboxTimer) && !TickTimer(ref m_HitboxCooldown))
         {
-            // Add the time since the last frame to the active time
-            m_HitboxActiveTime += Time.deltaTime;
-
-            // Check if the active time is greater than the hit duration
-            if (m_HitboxActiveTime >= HitDuration)
-            {
-                // Disable the hitbox
-                m_HitBox.enabled = false;
-
-                // Reset the active time
-                m_HitboxActiveTime = 0.0f;
-
-                // Set the remaining cooldown
-                m_HitboxCooldown = HitCooldown;
-            }
+            ScanForHittables();
         }
 
-        // Check if the hitbox is on cooldown
-        if (m_HitboxCooldown > 0.0f)
-        {
-            // Subtract the time since the last frame from the remaining cooldown
-            m_HitboxCooldown -= Time.deltaTime;
-        }
-
-        // Check if the bubble is on cooldown
-        if (m_BubbleCooldown > 0.0f)
-        {
-            // Subtract the time since the last frame from the remaining cooldown
-            m_BubbleCooldown -= Time.deltaTime;
-        }
-    }
-
-    private void Move()
-    {
-        // Move the player in world space
-        transform.position += DeltaMove;
-    }
-
-    /* Combat Methods */
-
-    public void Stun(float seconds)
-    {
-        m_StunnedTimer = seconds;
-    }
-
-    public void KnockBack(Vector3 direction, uint damage = 0u)
-    {
-        // Check if the player is invulnerable
-        if (m_InvulnerabilityTimer > 0.0f) { return; }
-
-        // Move the player in the knockback direction
-        transform.position += direction;
-
-        // Decrease the player's oxygen
-        m_DamageTaken += damage;
-
-        // Become invulnerable for the determined time
-        m_InvulnerabilityTimer = InvulnerabilityTime;
-    }
-
-    public void Heal(uint amount)
-    {
-        // Increase the player's oxygen
-        m_DamageTaken -= amount;
-    }
-
-    /* Game Loop */
-
-    public void SetID(uint id)
-    {
-        m_PlayerID = id;
+        TickTimer(ref m_BubbleCooldown);
+        TickTimer(ref m_InvulnerabilityTimer);
     }
 
     private void Start()
@@ -632,32 +720,20 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Check if the player is stunned
-        if (m_StunnedTimer > 0.0f)
-        {
-            // Subtract the time since the last frame from the stunned timer
-            m_StunnedTimer -= Time.deltaTime;
-
-            // If the stunned timer is less than or equal to zero, reset the timer
-            if (m_StunnedTimer <= 0.0f) { m_StunnedTimer = 0.0f; }
-            else { return; }
-        }
+        if (TickTimer(ref m_StunnedTimer) || Oxygen == 0u) { return; }
 
         // Update the movement
         MoveUpdate();
 
         // Update the attack
-        AtackUpdate();
+        CombatUpdate();
 
         // Update the player oxygen
         if (Oxygen > 0)
         {
-            // Subtract the time since the last frame from the oxygen timer
-            m_OxygenTimer -= Time.deltaTime;
-
-            // If the oxygen timer is less than or equal to zero, reset the timer
-            if (m_OxygenTimer <= 0.0f)
+            if (!TickTimer(ref m_OxygenTimer))
             {
+                // Reset the timer and take damage
                 m_OxygenTimer = OxygenDuration;
                 m_DamageTaken++;
             }

@@ -53,6 +53,9 @@ public class GameManager : MonoBehaviour
         // Set the player's ID
         player.SetID((uint)m_Players.Count);
 
+        // Change the game object's name
+        player.gameObject.name = "Player " + m_Players.Count;
+
         // Subscribe to the player's death event
         player.OnDeath += OnPlayerDeath;
     }

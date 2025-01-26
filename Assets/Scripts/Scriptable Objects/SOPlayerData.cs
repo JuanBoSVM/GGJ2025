@@ -12,6 +12,9 @@ public class SOPlayerData : ScriptableObject
     [Tooltip("The amount of time in seconds an oxygen bubble will last for")]
     public float _oxygenDuration;
 
+    [Tooltip("The amount of time in seconds the player reduces its stun duration per movement input")]
+    public float _stunReduction;
+
     [Space(10)]
     [Header("Movement Data")]
     [Space(15)]
@@ -63,7 +66,10 @@ public class SOPlayerData : ScriptableObject
     [Space(15)]
 
     [Tooltip("Units to send the opponent flying on a melee hit")]
-    public float _knockbackForce;
+    public float _knockbackDistance;
+
+    [Tooltip("The duration of the knockback in seconds")]
+    public float _knockbackDuration;
 
     [Tooltip("The range of the melee attack in units")]
     public float _meleeRange;
@@ -72,7 +78,7 @@ public class SOPlayerData : ScriptableObject
     [Range(0, 10)]
     public uint _meleeDamage;
 
-    [Tooltip("The speed multiplier for the bubble when attacking it")]
+    [Tooltip("The speed multiplier for the bubble when attacking it (Additive)")]
     public float _parryMultiplier;
 
     [Tooltip("Chance to parry the bubble")]

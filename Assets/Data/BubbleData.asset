@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec349f2cf02ba744e9d263f606cdc749, type: 3}
   m_Name: BubbleData
   m_EditorClassIdentifier: 
+  _oxygenRestored: 0
   _stunDuration: 1
-  _speed: 20
-  _range: 20
+  _speed: 0.1
+  _range: 10

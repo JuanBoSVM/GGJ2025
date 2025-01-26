@@ -6,9 +6,6 @@ public class Bubble : MonoBehaviour
     [SerializeField]
     private SOBubbleData m_BubbleData;
 
-    [SerializeField]
-    private SphereCollider m_Collider;
-
     private GameObject m_Owner;
 
     /* Movement Members */
@@ -104,6 +101,9 @@ public class Bubble : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
+        // If the other collider is the owner or a trigger, ignore it
+        if (other.isTrigger || other.gameObject == m_Owner) { return; }
+
         // Check if the collider is the player
         if (other.gameObject.CompareTag("Player") && other.gameObject != m_Owner)
         {
@@ -141,7 +141,7 @@ public class Bubble : MonoBehaviour
         m_IsHealthBubble = false;
     }
 
-    public void Parry(Vector3 direction, float speedMultiplier = 1.0f)
+    public void Redirect(Vector3 direction, float speedMultiplier = 1.0f)
     {
         // Change the direction of the bubble
         m_MoveDirection = direction;
@@ -151,6 +151,11 @@ public class Bubble : MonoBehaviour
 
         // Accelerate the bubble
         m_SpeedMultiplier += speedMultiplier;
+    }
+
+    public void SetOwner(GameObject owner)
+    {
+        m_Owner = owner;
     }
 
     private void Start()
@@ -170,7 +175,7 @@ public class Bubble : MonoBehaviour
         transform.parent = null;
 
         // Determine if the parent is a player
-        if (transform.parent.gameObject.CompareTag("Player"))
+        if (m_Owner.gameObject.CompareTag("Player"))
         {
             // Match the rotation of the shooter
             m_MoveDirection = m_Owner.transform.forward;
