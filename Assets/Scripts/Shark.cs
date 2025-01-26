@@ -2,7 +2,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 public class Shark : MonoBehaviour
-{ 
+{
     /*shark members*/
     [SerializeField]
     private SOshark m_sharkData;
@@ -16,18 +16,16 @@ public class Shark : MonoBehaviour
     /* Shark direction */
     private Vector3 m_sharkDirection = Vector3.zero;
 
-    [SerializeField]
-    [Tooltip("Shark´s collider component")]
-    private BoxCollider m_hitbox;
-
     /* Shark knockback */
     private float m_sharkKnockbackForce = 0.0f;
 
     /* Shark knockback direction */
-    private Vector3 m_knockbackDirection = Vector3.zero;
+    private Vector3[] m_knockbackDirection;
 
     /*shark position*/
     private Vector3 m_sharkPosition = Vector3.zero;
+
+    private Player[] m_knockedPlayers;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -40,9 +38,6 @@ public class Shark : MonoBehaviour
         m_sharkSpeed = m_sharkData._sharkSpeed;
         m_sharkDamage = m_sharkData._sharkDamage;
         m_sharkKnockbackForce = m_sharkData.SharkKnockback;
-
-        m_knockbackDirection = CalculateKnockbackDirection(m_sharkPosition);
-
     }
 
     //Get shark position
@@ -59,7 +54,7 @@ public class Shark : MonoBehaviour
     }
 
     //Start moving the shark to a direction
-    public void Move ()
+    public void Move()
     {
         transform.position += m_sharkDirection * m_sharkSpeed * Time.deltaTime;
     }
@@ -69,20 +64,39 @@ public class Shark : MonoBehaviour
     private void FixedUpdate()
     {
         Move();
+
+        for (int i = 0; i < m_knockedPlayers.Length; i++)
+        {
+            if (m_knockedPlayers[i] != null)
+            {
+                StartCoroutine(m_knockedPlayers[i].KnockBack(m_knockbackDirection[i], m_sharkKnockbackForce, m_sharkDamage));
+            }
+        }
     }
-    private void OnCollision(Collision collision)
+    public void OnTriggerEnter(Collider colider)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        Debug.Log("Shark collided with something");
+
+        if (colider.gameObject.CompareTag("Player"))
         {
             // Handle collision with player
             Debug.Log("Shark collided with player");
-            Player player = collision.gameObject.GetComponent<Player>();
-            if (player != null)
+
+            Player player = colider.gameObject.GetComponent<Player>();
+            if (player == null)
             {
-               Debug.Log("Null reference player ");
+                Debug.Log("Null reference player ");
             }
             GetSharkPosition();
-            StartCoroutine(player.KnockBack(m_knockbackDirection * m_sharkKnockbackForce, 2, m_sharkDamage));
+
+            // Add the player to the knockback list
+            m_knockedPlayers[m_knockedPlayers.Length] = player;
+
+            // Calculate the knockback direction
+            Vector3 knockDir = CalculateKnockbackDirection(player.transform.position);
+
+            // Add the knockback to the knockback list
+            m_knockbackDirection[m_knockbackDirection.Length] = knockDir;
         }
     }
 }
