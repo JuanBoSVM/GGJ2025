@@ -659,6 +659,13 @@ public class Player : MonoBehaviour
         m_DamageTaken -= amount;
     }
 
+    /* Control Synchronization */
+
+    public void SetPlayerDevice()
+    {
+        Debug.Log(m_PlayerInput.user.pairedDevices);
+    }
+
     /* Game Loop */
 
     private void MoveUpdate()
@@ -713,6 +720,8 @@ public class Player : MonoBehaviour
         {
             Debug.LogError("CinemachineImpulseSource reference not set in Player script");
         }
+
+        Debug.Log(m_PlayerInput.user.pairedDevices);
 
         // Set the oxygen timer
         m_OxygenTimer = OxygenDuration;

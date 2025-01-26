@@ -9,12 +9,6 @@ EditorBuildSettings:
     path: "Assets/Scenes/Men\xFA inicio.unity"
     guid: 8a1dc4d8a5c5c0841b30916c51c00ed6
   - enabled: 1
-    path: Assets/Scenes/Nivel_1.unity
-    guid: b474c4b8cc499c6488d6044d69886abb
-  - enabled: 1
-    path: Assets/Scenes/Nivel_2.unity
-    guid: 49c7bc47fbfdd7a4ebe31ca8b6483d2c
-  - enabled: 1
     path: Assets/Scenes/Nivel_3.unity
     guid: 67a355c8290d3bf49b38aee01169e500
   m_configObjects:
