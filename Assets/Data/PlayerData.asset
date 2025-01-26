@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _oxygen: 0
   _oxygenDuration: 0
-  _maxSpeed: 10
+  _maxSpeed: 0
   _accelerationStep: 5
   _directionalControl: 0.2
   _dashSpeed: 5
