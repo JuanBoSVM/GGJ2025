@@ -33,7 +33,7 @@ public class Heiser : MonoBehaviour
         }
         Debug.Log("Bubble shot");
         m_verticalOffset = m_heiserData._verticalOffset;
-        Instantiate(BubblePrefab, transform.position + new Vector3(0, m_verticalOffset, 0), transform.rotation);
+        Instantiate(BubblePrefab, transform.position + new Vector3(0, m_verticalOffset, 0), transform.rotation, transform);
     }
 }
 

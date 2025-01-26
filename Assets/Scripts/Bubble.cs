@@ -170,7 +170,7 @@ public class Bubble : MonoBehaviour
         transform.parent = null;
 
         // Determine if the parent is a player
-        if (transform.parent.gameObject.CompareTag("Player"))
+        if (m_Owner.gameObject.CompareTag("Player"))
         {
             // Match the rotation of the shooter
             m_MoveDirection = m_Owner.transform.forward;

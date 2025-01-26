@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05905c970d5259848a6c4a5ff042083b, type: 3}
   m_Name: HeiserData
   m_EditorClassIdentifier: 
-  _bubbleCooldown: 5
+  _bubbleCooldown: 7.66
   _bubblePrefab: {fileID: 3628480552008647998, guid: a6c60f7b16414714db3c9d107f2c1d53, type: 3}
-  _verticalOffset: 3
+  _verticalOffset: 5.47
