@@ -13,14 +13,13 @@ GameObject:
   - component: {fileID: 2797345485105256573}
   - component: {fileID: 8745303133280307553}
   - component: {fileID: 6713347438625665833}
-  - component: {fileID: 6433583044288555025}
   - component: {fileID: 3566610664255236553}
   - component: {fileID: -3595061489821287003}
   - component: {fileID: 197369412036885621}
   - component: {fileID: 6714300541206544131}
   m_Layer: 0
-  m_Name: Player
-  m_TagString: Player
+  m_Name: Player 1
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35,8 +34,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.51, y: 0.51, z: 0.51}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -131,39 +130,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 0.5}
   m_Center: {x: 0, y: 0, z: 1}
---- !u!54 &6433583044288555025
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6477641373957971902}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 116
-  m_CollisionDetection: 0
 --- !u!114 &3566610664255236553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -261,6 +233,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PlayerData: {fileID: 11400000, guid: 56ccea32992e24f4784966e7b3b1c424, type: 2}
   m_PlayerInput: {fileID: -3595061489821287003}
+  m_Collider: {fileID: 8745303133280307553}
+  m_HitBox: {fileID: 6713347438625665833}
   m_ImpulseSource: {fileID: 3566610664255236553}
 --- !u!54 &6714300541206544131
 Rigidbody:
