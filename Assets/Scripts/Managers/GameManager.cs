@@ -11,6 +11,11 @@ public class GameManager : MonoBehaviour
     private List<Player> m_Players = new List<Player>();
     private List<uint> m_Scores = new List<uint>();
 
+    // Public list not serialized
+    [System.NonSerialized]
+    public List<uint> m_PlayerSkinsID = new List<uint>();
+
+
     // Accessor for the GameManager instance
     public static GameManager Instance
     {
@@ -38,6 +43,9 @@ public class GameManager : MonoBehaviour
 
     void OnPlayerJoined(PlayerInput playerInput)
     {
+        // Check the action map its using
+        if (playerInput.defaultActionMap != "Player") { return; }
+
         // Get the player component
         Player player = playerInput.gameObject.GetComponent<Player>();
 
