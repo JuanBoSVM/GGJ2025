@@ -380,7 +380,7 @@ public class Player : MonoBehaviour
 
     private void OnFire()
     {
-        if (m_BubbleCooldown > 0.0f) { return; }
+        if (m_BubbleCooldown > 0.0f || Oxygen == 1u) { return; }
 
         // Spawn the bubble prefab
         Instantiate(BubblePrefab, transform.position, Quaternion.identity, transform);
