@@ -5,8 +5,12 @@ public class SOPlayerData : ScriptableObject
 {
     [Header("General Data")]
     [Space(15)]
+
     [Range(0u, 10u)]
     public uint _oxygen;
+
+    [Tooltip("The amount of time in seconds an oxygen bubble will last for")]
+    public float _oxygenDuration;
 
     [Space(10)]
     [Header("Movement Data")]

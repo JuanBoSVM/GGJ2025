@@ -4,6 +4,11 @@ using Unity.Cinemachine;
 
 public class Player : MonoBehaviour
 {
+    /* Delegate Declaration */
+
+    public delegate void DeathEvent(uint id);
+    public DeathEvent OnDeath;
+
     /* References */
 
     [SerializeField]
@@ -24,6 +29,10 @@ public class Player : MonoBehaviour
     [Tooltip("Component that sends the signal to the camera")]
     private CinemachineImpulseSource m_ImpulseSource;
 
+    /* Other Members */
+
+    private uint m_PlayerID = 0u;
+
     /* Movement Members */
 
     private float m_Acceleration = 0.0f;
@@ -31,7 +40,6 @@ public class Player : MonoBehaviour
     private Vector3 m_TargetDirection = Vector3.zero;
     private Vector3 m_BufferedDirection = Vector3.zero;
     private float m_SpeedMultiplier = 1.0f;
-    private float m_DashTimer = 0.0f;
     private float m_DashCooldown = 0.0f;
 
     /* Combat Members */
@@ -40,8 +48,13 @@ public class Player : MonoBehaviour
     private float m_HitboxActiveTime = 0.0f;
     private float m_HitboxCooldown = 0.0f;
     private float m_BubbleCooldown = 0.0f;
+
+    /* Timers */
+
+    private float m_OxygenTimer = 0.0f;
     private float m_StunnedTimer = 0.0f;
     private float m_InvulnerabilityTimer = 0.0f;
+    private float m_DashTimer = 0.0f;
 
     /* Accessors */
 
@@ -273,6 +286,22 @@ public class Player : MonoBehaviour
 
             // Return the value
             return m_PlayerData._dashCooldown;
+        }
+    }
+
+    private float OxygenDuration
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._oxygenDuration;
         }
     }
 
@@ -555,6 +584,8 @@ public class Player : MonoBehaviour
         transform.position += DeltaMove;
     }
 
+    /* Combat Methods */
+
     public void Stun(float seconds)
     {
         m_StunnedTimer = seconds;
@@ -581,12 +612,22 @@ public class Player : MonoBehaviour
         m_DamageTaken -= amount;
     }
 
+    /* Game Loop */
+
+    public void SetID(uint id)
+    {
+        m_PlayerID = id;
+    }
+
     private void Start()
     {
         if (m_ImpulseSource is null)
         {
             Debug.LogError("CinemachineImpulseSource reference not set in Player script");
         }
+
+        // Set the oxygen timer
+        m_OxygenTimer = OxygenDuration;
     }
 
     private void FixedUpdate()
@@ -607,5 +648,25 @@ public class Player : MonoBehaviour
 
         // Update the attack
         AtackUpdate();
+
+        // Update the player oxygen
+        if (Oxygen > 0)
+        {
+            // Subtract the time since the last frame from the oxygen timer
+            m_OxygenTimer -= Time.deltaTime;
+
+            // If the oxygen timer is less than or equal to zero, reset the timer
+            if (m_OxygenTimer <= 0.0f)
+            {
+                m_OxygenTimer = OxygenDuration;
+                m_DamageTaken++;
+            }
+        }
+
+        else
+        {
+            // Send the death signal
+            OnDeath?.Invoke(m_PlayerID);
+        }
     }
 }
