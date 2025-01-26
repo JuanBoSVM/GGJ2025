@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31d0b0a8b4ed08446b177b3eddc08a76, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
-  _oxygen: 0
-  _oxygenDuration: 0
-  _maxSpeed: 0
+  _oxygen: 10
+  _oxygenDuration: 15
+  _stunReduction: 0
+  _maxSpeed: 10
   _accelerationStep: 5
   _directionalControl: 0.2
   _dashSpeed: 5
@@ -22,13 +23,14 @@ MonoBehaviour:
   _dashCooldown: 0
   _chargePhases: 0
   _phaseChargeTime: 0
-  _bubbleCooldown: 0
+  _bubbleCooldown: 0.5
   _bubblePrefab: {fileID: 3628480552008647998, guid: a6c60f7b16414714db3c9d107f2c1d53, type: 3}
-  _knockbackForce: 10
+  _knockbackDistance: 2
+  _knockbackDuration: 1
   _meleeRange: 0
   _meleeDamage: 0
-  _parryMultiplier: 0
-  _parryChance: 0
-  _invulnerabilityDuration: 0
-  _hitboxDuration: 0
-  _hitboxCooldown: 0
+  _parryMultiplier: 0.1
+  _parryChance: 1
+  _invulnerabilityDuration: 1
+  _hitboxDuration: 1
+  _hitboxCooldown: 1

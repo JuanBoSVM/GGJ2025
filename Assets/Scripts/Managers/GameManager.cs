@@ -7,8 +7,9 @@ public class GameManager : MonoBehaviour
     // Instance of the GameManager
     private static GameManager _instance;
 
-    // List of the player game objects
+    // List of the player game objects and its scores
     private List<Player> m_Players = new List<Player>();
+    private List<uint> m_Scores = new List<uint>();
 
     // Accessor for the GameManager instance
     public static GameManager Instance
@@ -52,6 +53,9 @@ public class GameManager : MonoBehaviour
 
         // Set the player's ID
         player.SetID((uint)m_Players.Count);
+
+        // Change the game object's name
+        player.gameObject.name = "Player " + m_Players.Count;
 
         // Subscribe to the player's death event
         player.OnDeath += OnPlayerDeath;
