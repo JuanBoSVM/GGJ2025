@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Shark : MonoBehaviour
@@ -7,26 +8,26 @@ public class Shark : MonoBehaviour
     private SOshark m_sharkData;
 
     /* Shark speed */
-    [SerializeField]
     private float m_sharkSpeed = 0.0f;
 
     /* Shark damage*/
-    [SerializeField]
     private uint m_sharkDamage = 0;
 
     /* Shark direction */
-    [SerializeField]
     private Vector3 m_sharkDirection = Vector3.zero;
-
-    /*player reference*/
-    [SerializeField]
-    private GameObject m_player;
 
     [SerializeField]
     [Tooltip("Shark´s collider component")]
     private BoxCollider m_hitbox;
 
-    private Collision m_collision;
+    /* Shark knockback */
+    private float m_sharkKnockbackForce = 0.0f;
+
+    /* Shark knockback direction */
+    private Vector3 m_knockbackDirection = Vector3.zero;
+
+    /*shark position*/
+    private Vector3 m_sharkPosition = Vector3.zero;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -38,23 +39,26 @@ public class Shark : MonoBehaviour
         }
         m_sharkSpeed = m_sharkData._sharkSpeed;
         m_sharkDamage = m_sharkData._sharkDamage;
+        m_sharkKnockbackForce = m_sharkData.SharkKnockback;
 
-        //onAttack();
+        m_knockbackDirection = CalculateKnockbackDirection(m_sharkPosition);
+
     }
 
-
-
-    private void onAttack()
+    //Get shark position
+    private void GetSharkPosition()
     {
-        
+        m_sharkPosition = transform.position;
     }
 
-    //Collision with player
-    private void OnCollision()
+    private Vector3 CalculateKnockbackDirection(Vector3 playerPosition)
     {
-
+        Vector3 knockbackDirection = playerPosition - m_sharkPosition;
+        knockbackDirection.Normalize();
+        return knockbackDirection;
     }
 
+    //Start moving the shark to a direction
     public void Move ()
     {
         transform.position += m_sharkDirection * m_sharkSpeed * Time.deltaTime;
@@ -66,12 +70,19 @@ public class Shark : MonoBehaviour
     {
         Move();
     }
-    private void OnCollisionEnter(Collision collision)
+    private void OnCollision(Collision collision)
     {
-        if (collision.gameObject == m_player)
+        if (collision.gameObject.CompareTag("Player"))
         {
             // Handle collision with player
             Debug.Log("Shark collided with player");
+            Player player = collision.gameObject.GetComponent<Player>();
+            if (player != null)
+            {
+               Debug.Log("Null reference player ");
+            }
+            GetSharkPosition();
+            StartCoroutine(player.KnockBack(m_knockbackDirection * m_sharkKnockbackForce, 2, m_sharkDamage));
         }
     }
 }

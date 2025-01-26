@@ -12,15 +12,7 @@ public class SOshark : ScriptableObject
     [Tooltip("shark damage")]
     public uint _sharkDamage;
 
-    [Header("Shark prefab")]
-    [Tooltip("The shark prefab")]
-    public GameObject _sharkPrefab;
-
-    [Header("Player prefab")]
-    [Tooltip ("player prefab")]
-    public GameObject _playerPrefab;
-
-    [Header("Shark collider")]
-    [Tooltip ("shark´s collider component")]
-    public BoxCollider _hitBox;
+    [Header("Shark knockback")]
+    [Tooltip("shark knockback")]
+    public float SharkKnockback;
 }
