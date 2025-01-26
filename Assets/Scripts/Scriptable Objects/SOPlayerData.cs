@@ -5,8 +5,12 @@ public class SOPlayerData : ScriptableObject
 {
     [Header("General Data")]
     [Space(15)]
-    [Range(0, 10)]
+
+    [Range(0u, 10u)]
     public uint _oxygen;
+
+    [Tooltip("The amount of time in seconds an oxygen bubble will last for")]
+    public float _oxygenDuration;
 
     [Space(10)]
     [Header("Movement Data")]
@@ -27,6 +31,15 @@ public class SOPlayerData : ScriptableObject
         "1 = The player instantly turns around")]
     [Range(0.0f, 1.0f)]
     public float _directionalControl;
+
+    [Tooltip("The speed multiplier during the dash")]
+    public float _dashSpeed;
+
+    [Tooltip("The duration of the dash in seconds")]
+    public float _dashDuration;
+
+    [Tooltip("The cooldown of the dash in seconds")]
+    public float _dashCooldown;
 
     [Space(10)]
     [Header("Ranged Combat Data")]
@@ -58,6 +71,13 @@ public class SOPlayerData : ScriptableObject
     [Tooltip("The amount of damage the melee attack does")]
     [Range(0, 10)]
     public uint _meleeDamage;
+
+    [Tooltip("The speed multiplier for the bubble when attacking it")]
+    public float _parryMultiplier;
+
+    [Tooltip("Chance to parry the bubble")]
+    [Range(0.0f, 1.0f)]
+    public float _parryChance;
 
     [Tooltip("The amount of time in seconds the player is invulnerable after being hit")]
     public float _invulnerabilityDuration;

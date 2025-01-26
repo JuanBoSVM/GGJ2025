@@ -9,10 +9,16 @@ public class Bubble : MonoBehaviour
     [SerializeField]
     private SphereCollider m_Collider;
 
-    private GameObject m_Shooter;
+    private GameObject m_Owner;
 
     /* Movement Members */
     private float m_TraveledDistance = 0.0f;
+    private Vector3 m_MoveDirection = Vector3.zero;
+
+    /* Other Members */
+
+    private bool m_IsHealthBubble = false;
+    private float m_SpeedMultiplier = 1.0f;
 
     /* Accessors */
 
@@ -28,15 +34,78 @@ public class Bubble : MonoBehaviour
             }
 
             // Return the delta move
-            return transform.forward * m_BubbleData._speed * Time.fixedDeltaTime;
+            return m_MoveDirection * m_BubbleData._speed * Time.fixedDeltaTime;
         }
     }
 
+    private float Speed
+    {
+        get
+        {
+            // Validate the reference to the bubble data
+            if (m_BubbleData == null)
+            {
+                Debug.LogError("BubbleData reference not set in Bubble script");
+                return 0.0f;
+            }
+            // Return the speed
 
-    private void OnTriggerEnter(Collider other)
+            return m_BubbleData._speed * m_SpeedMultiplier;
+        }
+    }
+
+    private float Range
+    {
+        get
+        {
+            // Validate the reference to the bubble data
+            if (m_BubbleData == null)
+            {
+                Debug.LogError("BubbleData reference not set in Bubble script");
+                return 0.0f;
+            }
+
+            // Return the range
+            return m_BubbleData._range;
+        }
+    }
+
+    public float StunDuration
+    {
+        get
+        {
+            // Validate the reference to the bubble data
+            if (m_BubbleData == null)
+            {
+                Debug.LogError("BubbleData reference not set in Bubble script");
+                return 0.0f;
+            }
+
+            // Return the stun duration
+            return m_BubbleData._stunDuration;
+        }
+    }
+
+    public uint OxygenRestored
+    {
+        get
+        {
+            // Validate the reference to the bubble data
+            if (m_BubbleData == null)
+            {
+                Debug.LogError("BubbleData reference not set in Bubble script");
+                return 0u;
+            }
+
+            // Return the oxygen restored
+            return m_BubbleData._oxygenRestored;
+        }
+    }
+
+    public void OnTriggerEnter(Collider other)
     {
         // Check if the collider is the player
-        if (other.gameObject.CompareTag("Player") && other.gameObject != m_Shooter)
+        if (other.gameObject.CompareTag("Player") && other.gameObject != m_Owner)
         {
             // Get the player script
             Player player = other.gameObject.GetComponent<Player>();
@@ -44,36 +113,77 @@ public class Bubble : MonoBehaviour
             // Check if the player script is valid
             if (player != null)
             {
-                // Validate the reference to the bubble data
-                if (m_BubbleData == null)
+                if (m_IsHealthBubble)
                 {
-                    Debug.LogError("BubbleData reference not set in Bubble script");
-                    Destroy(gameObject);
-                    return;
+                    // Restore the player's oxygen
+                    player.Heal(OxygenRestored);
                 }
 
-                // Stun the player
-                player.Stun(m_BubbleData._stunDuration);
+                else
+                {
+                    // Stun the player
+                    player.Stun(StunDuration);
+                }
             }
         }
 
-        // Destroy the bubble
-        Destroy(gameObject);
+        // Destroy the bubble if it hits anything other than the shooter
+        if (other.gameObject != m_Owner) { Destroy(gameObject); }
+    }
+
+    public void Purify()
+    {
+        m_IsHealthBubble = true;
+    }
+
+    public void Corrupt()
+    {
+        m_IsHealthBubble = false;
+    }
+
+    public void Parry(Vector3 direction, float speedMultiplier = 1.0f)
+    {
+        // Change the direction of the bubble
+        m_MoveDirection = direction;
+
+        // Reset the traveled distance
+        m_TraveledDistance = 0.0f;
+
+        // Accelerate the bubble
+        m_SpeedMultiplier += speedMultiplier;
     }
 
     private void Start()
     {
+        // Determine if the bubble has a parent
+        if (transform.parent == null)
+        {
+            Debug.LogError("Bubble has no parent");
+            Destroy(gameObject);
+            return;
+        }
+
         // Save a reference to the shooter
-        m_Shooter = transform.parent.gameObject;
+        m_Owner = transform.parent.gameObject;
 
         // Remove the bubble from its parent
         transform.parent = null;
+
+        // Determine if the parent is a player
+        if (transform.parent.gameObject.CompareTag("Player"))
+        {
+            // Match the rotation of the shooter
+            m_MoveDirection = m_Owner.transform.forward;
+        }
+
+        // If the parent is not a player, the bubble will not move
+        else { m_MoveDirection = Vector3.zero; }
     }
 
     private void FixedUpdate()
     {
         // Move the bubble until it reaches the range
-        if (m_TraveledDistance < m_BubbleData._range)
+        if (m_TraveledDistance < Range)
         {
             transform.position += DeltaMove;
             m_TraveledDistance += DeltaMove.magnitude;

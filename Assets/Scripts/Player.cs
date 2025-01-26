@@ -4,6 +4,11 @@ using Unity.Cinemachine;
 
 public class Player : MonoBehaviour
 {
+    /* Delegate Declaration */
+
+    public delegate void DeathEvent(uint id);
+    public DeathEvent OnDeath;
+
     /* References */
 
     [SerializeField]
@@ -24,18 +29,32 @@ public class Player : MonoBehaviour
     [Tooltip("Component that sends the signal to the camera")]
     private CinemachineImpulseSource m_ImpulseSource;
 
+    /* Other Members */
+
+    private uint m_PlayerID = 0u;
+
     /* Movement Members */
 
     private float m_Acceleration = 0.0f;
     private Vector3 m_MoveDirection = Vector3.zero;
     private Vector3 m_TargetDirection = Vector3.zero;
+    private Vector3 m_BufferedDirection = Vector3.zero;
+    private float m_SpeedMultiplier = 1.0f;
+    private float m_DashCooldown = 0.0f;
 
     /* Combat Members */
 
+    private uint m_DamageTaken = 0u;
     private float m_HitboxActiveTime = 0.0f;
     private float m_HitboxCooldown = 0.0f;
     private float m_BubbleCooldown = 0.0f;
+
+    /* Timers */
+
+    private float m_OxygenTimer = 0.0f;
     private float m_StunnedTimer = 0.0f;
+    private float m_InvulnerabilityTimer = 0.0f;
+    private float m_DashTimer = 0.0f;
 
     /* Accessors */
 
@@ -51,7 +70,7 @@ public class Player : MonoBehaviour
             }
 
             // Return the value
-            return m_PlayerData._oxygen;
+            return m_PlayerData._oxygen - m_DamageTaken;
         }
     }
 
@@ -67,7 +86,7 @@ public class Player : MonoBehaviour
             }
 
             // Return the value
-            return m_PlayerData._maxSpeed * m_Acceleration;
+            return m_PlayerData._maxSpeed * m_Acceleration * m_SpeedMultiplier;
         }
     }
 
@@ -142,10 +161,161 @@ public class Player : MonoBehaviour
         }
     }
 
-    /* Input Methods */
+    private uint MeleeDamage
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0u;
+            }
+
+            // Return the value
+            return m_PlayerData._meleeDamage;
+        }
+    }
+
+    private float ParryMultiplier
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._parryMultiplier;
+        }
+    }
+
+    private float ParryChance
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._parryChance;
+        }
+    }
+
+    private Vector3 KnockbackDirection
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return Vector3.zero;
+            }
+
+            // Return the value
+            return transform.forward * m_PlayerData._knockbackForce;
+        }
+    }
+
+    private float InvulnerabilityTime
+    {
+        get
+        {
+            // Validate the reference
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._invulnerabilityDuration;
+        }
+    }
+
+    private float DashDuration
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._dashDuration;
+        }
+    }
+
+    private float DashSpeed
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._dashSpeed;
+        }
+    }
+
+    private float DashCooldown
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._dashCooldown;
+        }
+    }
+
+    private float OxygenDuration
+    {
+        get
+        {
+            // Validate the reference to the player data
+            if (m_PlayerData == null)
+            {
+                Debug.LogError("PlayerData reference not set in Player script");
+                return 0.0f;
+            }
+
+            // Return the value
+            return m_PlayerData._oxygenDuration;
+        }
+    }
+
+    /* Events */
 
     private void OnMove(InputValue value)
     {
+        // Buffer inputs during the dash
+        if (m_DashTimer > 0.0f)
+        {
+            m_BufferedDirection = value.Get<Vector2>().normalized;
+            return;
+        }
+
         // Get the input value
         Vector2 input = value.Get<Vector2>().normalized;
 
@@ -175,8 +345,104 @@ public class Player : MonoBehaviour
     {
         // Enable the hit box
         m_HitBox.enabled = true;
+    }
 
-        ShakeCameraManager.Instance.ShakeCamera(m_ImpulseSource);
+    private void OnLook(InputValue value)
+    {
+        // Determine if the input scheme is a mouse or a gamepad
+        bool isGamepad = m_PlayerInput.currentControlScheme == "Gamepad";
+
+        // Get the input value
+        Vector2 input = value.Get<Vector2>().normalized;
+
+        if (!isGamepad)
+        {
+            // TODO: Implement mouse look
+        }
+
+        // Rotate the player to look at the target direction
+        transform.LookAt(transform.position + new Vector3(input.x, 0.0f, input.y));
+    }
+
+    public void OnTriggerEnter(Collider other)
+    {
+        // Check if the other collider is a player
+        if (other.gameObject.CompareTag("Player"))
+        {
+            // Shake the camera
+            ShakeCameraManager.Instance.ShakeCamera(m_ImpulseSource);
+
+            // Get the player script
+            Player player = other.gameObject.GetComponent<Player>();
+
+            // Check if the player script is valid
+            if (player != null)
+            {
+                // Validate the reference to the player data
+                if (m_PlayerData == null)
+                {
+                    Debug.LogError("PlayerData reference not set in Player script");
+                    return;
+                }
+
+                // Knock the player back
+                player.KnockBack(KnockbackDirection, MeleeDamage);
+            }
+        }
+
+        // Check if the other collider is a bubble
+        else if (other.gameObject.CompareTag("Bubble"))
+        {
+            // Get the bubble script
+            Bubble bubble = other.gameObject.GetComponent<Bubble>();
+
+            // Check if the bubble script is valid
+            if (bubble != null)
+            {
+                // Validate the reference to the player data
+                if (m_PlayerData == null)
+                {
+                    Debug.LogError("Bubble script component missing");
+                    return;
+                }
+
+                // Randomly determine if the player will parry the bubble or pop it
+                if (Random.value > ParryChance) { Destroy(bubble.gameObject); }
+                else { bubble.Parry(transform.forward, ParryMultiplier); }
+            }
+        }
+    }
+
+    private void OnDash(InputValue value)
+    {
+        // Check if the input was a press or a release
+        if (value.isPressed)
+        {
+            // Check if the dash is on cooldown
+            if (m_DashCooldown > 0.0f) { return; }
+
+            // Set a target direction for the dash if there isn't one
+            if (m_TargetDirection == Vector3.zero) { m_TargetDirection = transform.forward; }
+
+            // Set the dash timer
+            m_DashTimer = DashDuration;
+
+            // Set the speed multiplier
+            m_SpeedMultiplier = DashSpeed;
+        }
+
+        else
+        {
+            // Check if the dash was interrupted
+            if (m_DashTimer > 0.0f)
+            {
+                // Reduce the dash timer to zero
+                m_DashTimer = 0.0f;
+
+                // Reset the speed multiplier
+                m_SpeedMultiplier = 1.0f;
+            }
+        }
     }
 
     /* Movement Methods */
@@ -212,6 +478,42 @@ public class Player : MonoBehaviour
         // If there's no current movement, but there's a target direction,
         // set the move direction to the target direction
         if (m_MoveDirection == Vector3.zero) { m_MoveDirection = m_TargetDirection; }
+
+        // Check if the dash is active
+        if (m_DashTimer > 0.0f)
+        {
+            // Subtract the time since the last frame from the dash timer
+            m_DashTimer -= Time.deltaTime;
+
+            // Clamp the dash timer to the range [0, DashDuration]
+            m_DashTimer = Mathf.Clamp(m_DashTimer, 0.0f, DashDuration);
+
+            // Check if the dash timer is zero
+            if (m_DashTimer == 0.0f)
+            {
+                // Load the buffered direction if there's one
+                if (m_BufferedDirection != Vector3.zero)
+                {
+                    m_TargetDirection = m_BufferedDirection;
+
+                    // Reset the buffered direction
+                    m_BufferedDirection = Vector3.zero;
+                }
+
+                // Reset the speed multiplier
+                m_SpeedMultiplier = 1.0f;
+            }
+        }
+
+        // Check if the dash is on cooldown
+        if (m_DashCooldown > 0.0f)
+        {
+            // Subtract the time since the last frame from the dash cooldown
+            m_DashCooldown -= Time.deltaTime;
+
+            // Clamp the dash cooldown to the range [0, DashCooldown]
+            m_DashCooldown = Mathf.Clamp(m_DashCooldown, 0.0f, DashCooldown);
+        }
 
         // Compare the move direction with the target direction
         bool sameDirection = m_MoveDirection == m_TargetDirection;
@@ -278,13 +580,43 @@ public class Player : MonoBehaviour
 
     private void Move()
     {
-        // Move the player
-        transform.Translate(DeltaMove);
+        // Move the player in world space
+        transform.position += DeltaMove;
     }
+
+    /* Combat Methods */
 
     public void Stun(float seconds)
     {
         m_StunnedTimer = seconds;
+    }
+
+    public void KnockBack(Vector3 direction, uint damage = 0u)
+    {
+        // Check if the player is invulnerable
+        if (m_InvulnerabilityTimer > 0.0f) { return; }
+
+        // Move the player in the knockback direction
+        transform.position += direction;
+
+        // Decrease the player's oxygen
+        m_DamageTaken += damage;
+
+        // Become invulnerable for the determined time
+        m_InvulnerabilityTimer = InvulnerabilityTime;
+    }
+
+    public void Heal(uint amount)
+    {
+        // Increase the player's oxygen
+        m_DamageTaken -= amount;
+    }
+
+    /* Game Loop */
+
+    public void SetID(uint id)
+    {
+        m_PlayerID = id;
     }
 
     private void Start()
@@ -293,6 +625,9 @@ public class Player : MonoBehaviour
         {
             Debug.LogError("CinemachineImpulseSource reference not set in Player script");
         }
+
+        // Set the oxygen timer
+        m_OxygenTimer = OxygenDuration;
     }
 
     private void FixedUpdate()
@@ -313,5 +648,25 @@ public class Player : MonoBehaviour
 
         // Update the attack
         AtackUpdate();
+
+        // Update the player oxygen
+        if (Oxygen > 0)
+        {
+            // Subtract the time since the last frame from the oxygen timer
+            m_OxygenTimer -= Time.deltaTime;
+
+            // If the oxygen timer is less than or equal to zero, reset the timer
+            if (m_OxygenTimer <= 0.0f)
+            {
+                m_OxygenTimer = OxygenDuration;
+                m_DamageTaken++;
+            }
+        }
+
+        else
+        {
+            // Send the death signal
+            OnDeath?.Invoke(m_PlayerID);
+        }
     }
 }
